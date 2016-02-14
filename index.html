@@ -4,9 +4,31 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <style type="text/css">
-        .track{ background-color: white; }
-        #marked{ background-color: lightskyblue; }
-        div, input, button{ padding: 10px;}
+        .track {
+            background-color: white;
+        }
+
+        #marked {
+            background-color: lightskyblue;
+        }
+
+        #player {
+            height: 10px;
+            width: 600px;
+            padding: 40px;
+        }
+
+        #messages {
+            background-color: firebrick;
+        }
+
+        #myRange {
+            width: 600px;
+        }
+
+        div, input, button {
+            padding: 10px;
+        }
     </style>
 
     <script type="text/javascript">
@@ -15,60 +37,50 @@
         var stack = [];
         var stack_pointer = 0;
 
-        function get_current()
-        {
+        function get_current() {
             return stack[stack_pointer];
         }
-        function push_top()
-        {
-            var new_ele = stack[stack_pointer-1]+1;
-            if(new_ele==input_tracks.files.length)
-            {
-               new_ele = 0;
+        function push_top() {
+            var new_ele = stack[stack_pointer - 1] + 1;
+            if (new_ele == input_tracks.files.length) {
+                new_ele = 0;
             }
             stack.push(new_ele);
         }
 
-        function push_bottom()
-        {
+        function push_bottom() {
 
-            var new_ele = stack[0]-1;
-            if(new_ele==-1)
-            {
-                new_ele = input_tracks.files.length-1;
+            var new_ele = stack[0] - 1;
+            if (new_ele == -1) {
+                new_ele = input_tracks.files.length - 1;
             }
 
             var bottom = [new_ele];
 
             stack = bottom.concat(stack);
             set_message(stack);
-            stack_pointer =0;
+            stack_pointer = 0;
         }
 
-        function set_next(id)
-        {
+        function set_next(id) {
             stack_pointer++;
             stack.push(id);
             return id;
         }
 
-        function get_next()
-        {
+        function get_next() {
             stack_pointer++;
 
-            if(stack.length==stack_pointer)
-            {
+            if (stack.length == stack_pointer) {
                 push_top();
             }
             return stack[stack_pointer];
         }
 
-        function get_prev()
-        {
+        function get_prev() {
             stack_pointer--;
 
-            if(-1==stack_pointer)
-            {
+            if (-1 == stack_pointer) {
                 push_bottom();
             }
             return stack[0];
@@ -98,22 +110,22 @@
                 //text1 = 'File ' + (x + 1) + ':  ' + input_tracks.files[x].name;
                 var text1 = input_tracks.files[x].name;
                 var node = document.createElement("div");                 // Create a <li> node
-                node.className  = "track";
-                node.setAttribute("onClick",  "play_id_track("+x+");");
+                node.className = "track";
+                node.setAttribute("onClick", "play_id_track(" + x + ");");
                 var textnode = document.createTextNode(text1);         // Create a text node
 
                 node.appendChild(textnode);                              // Append the text to <li>
                 fileList.appendChild(node);     // Append <li> to <ul> with id="myList"
             }
-            stack = [input_tracks.files.length-1];
+            stack = [input_tracks.files.length - 1];
             play_next_track();
         }
 
-       // function open_file() {
-       //     var loc = window.location.pathname;
-       //     var dir = loc.substring(0, loc.lastIndexOf('/'));
-       //     document.getElementById('boldStuff').innerHTML = loc;
-       // }
+        // function open_file() {
+        //     var loc = window.location.pathname;
+        //     var dir = loc.substring(0, loc.lastIndexOf('/'));
+        //     document.getElementById('boldStuff').innerHTML = loc;
+        // }
 
         function play_file(track) {
 
@@ -128,7 +140,7 @@
             player.pause();
             player.src = file;
             player.play();
-            document.getElementById("player").volume = get_init_volume()/100;
+            document.getElementById("player").volume = get_init_volume() / 100;
         }
 
         function stop() {
@@ -141,35 +153,30 @@
             player.play();
         }
 
-        function get_init_volume()
-        {
+        function get_init_volume() {
             return 10;
         }
 
-        function mark_current_file_view(track)
-        {
-            var track_view=document.getElementsByClassName("track")[track];
+        function mark_current_file_view(track) {
+            var track_view = document.getElementsByClassName("track")[track];
 
-            track_view.id="marked";
+            track_view.id = "marked";
 
         }
 
-        function unmark_current_file_view()
-        {set_message("TRACK");
-            var marked=document.getElementById("marked");
+        function unmark_current_file_view() {
+            set_message("TRACK");
+            var marked = document.getElementById("marked");
             set_message(marked);
-            if(marked!=null)
-            {
-                marked.id="unmarked";
+            if (marked != null) {
+                marked.id = "unmarked";
             }
 
             set_message("TRAC1K");
         }
 
 
-
-        function on_ended()
-        {
+        function on_ended() {
             play_next_track();
         }
 
@@ -177,69 +184,63 @@
             play_next_track();
         }
 
-        function prev()
-        {
+        function prev() {
             play_prev_track();
         }
 
 
-        function play_next_track()
-        {
+        function play_next_track() {
             unmark_current_file_view();
 
             play_file(get_next())
         }
 
-        function play_prev_track()
-        {
+        function play_prev_track() {
             unmark_current_file_view();
             play_file(get_prev())
         }
 
-        function play_id_track(id)
-        {
+        function play_id_track(id) {
             unmark_current_file_view();
             play_file(set_next(id))
         }
 
-
-        function change_volume()
-        {
-
-            var vol = document.getElementById('myRange').value/100;
-            set_message(vol);
-            document.getElementById('player').volume = vol;
-            document.getElementById('volume_label').innerHTML = vol;
+        function change_volume() {
+            var volume = document.getElementById('myRange').value / 100;
+            set_message(volume);
+            document.getElementById('player').volume = volume;
+            document.getElementById('volume_label').innerHTML = volume;
         }
     </script>
 </head>
 <body>
-    <div>
-        <video
-            style="height: 10px; width: 600px; padding: 40px;"
+<div>
+    <video
             controls=""
             id="player" onended="on_ended()">No support
-        </video>
-    </div>
-    <div>
-        <input type="file" name="filesToUpload" id="filesToUpload" multiple="" onchange="get_files();"/>
-    </div>
+    </video>
+</div>
+<div>
+    <input type="file" name="filesToUpload" id="filesToUpload" multiple="" onchange="get_files();"/>
+</div>
 
-    <div>
-        <button onclick="play()" type="button">Play Video</button>
-        <button onclick="stop()" type="button">Pause Video</button><br>
-        <button onclick="prev()" type="button">Prev Video</button>
-        <button onclick="next()" type="button">Next Video</button><br>
-        <label for="myRange">First name:</label>
-        <input type="range" name="firstname" id="myRange" value="1" onchange="change_volume()" style="width: 600px;">
-        <label id="volume_label"></label>
-        <br>
-    </div>
+<div>
+    <button onclick="play()" type="button">Play Video</button>
+    <button onclick="stop()" type="button">Pause Video</button>
+    <br>
+    <button onclick="prev()" type="button">Prev Video</button>
+    <button onclick="next()" type="button">Next Video</button>
+    <br>
+    <label for="myRange">First name:</label>
+    <input type="range" name="firstname" id="myRange" value="1" onchange="change_volume()">
+    <label id="volume_label"></label>
+    <br>
+</div>
 
-    <div id="fileList">
-        <div class="track" id="marked">No Files Selected1</div>
-    </div>
+<div id="fileList">
+    <div class="track" id="marked">No Files Selected1</div>
+</div>
 
-    <ol id="messages" style="background-color: firebrick"></ol>
+<ol id="messages"></ol>
 </body>
 </html>
