@@ -30,8 +30,10 @@
             padding: 10px;
         }
     </style>
-
     <script type="text/javascript">
+        // Todo debug stack
+        // Todo use OOP
+        // Todo fit to screen size
         var input_tracks = 0;
         var loop_tracklist = false;
         var stack = [];
@@ -146,11 +148,21 @@
         function stop() {
             var player = document.getElementById('player');
             player.pause();
+
+            var button = document.getElementById('start_stop_button');
+            button.setAttribute("onClick", "play();");
+            button.innerHTML = "Play Video";
         }
 
         function play() {
             var player = document.getElementById('player');
             player.play();
+
+
+            var button = document.getElementById('start_stop_button');
+            button.setAttribute("onClick", "stop();");
+            button.innerHTML = "Stop Video";
+
         }
 
         function get_init_volume() {
@@ -205,14 +217,32 @@
             play_file(set_next(id))
         }
 
-        function change_volume() {
+        var Model = function(){};
+        change_volume = function(volume)
+        {
+
+            document.getElementById('player').volume = volume;
+
+        };
+        var myModel = Model();
+        var View = function(){};
+        function onchange_volume()
+        {
             var volume = document.getElementById('myRange').value / 100;
             set_message(volume);
-            document.getElementById('player').volume = volume;
+            change_volume(volume);
+
             document.getElementById('volume_label').innerHTML = volume;
         }
+        var  myView = View();
+
+
+
+        var Stack = function(){};
+        var log = function(){};
     </script>
 </head>
+
 <body>
 <div>
     <video
@@ -225,14 +255,12 @@
 </div>
 
 <div>
-    <button onclick="play()" type="button">Play Video</button>
-    <button onclick="stop()" type="button">Pause Video</button>
-    <br>
     <button onclick="prev()" type="button">Prev Video</button>
+    <button id="start_stop_button" onclick="stop()" type="button">Stop Video</button>
     <button onclick="next()" type="button">Next Video</button>
     <br>
-    <label for="myRange">First name:</label>
-    <input type="range" name="firstname" id="myRange" value="1" onchange="change_volume()">
+    <label for="myRange">Volume</label>
+    <input type="range" name="firstname" id="myRange" value="1" onchange="onchange_volume()">
     <label id="volume_label"></label>
     <br>
 </div>
