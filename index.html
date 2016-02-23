@@ -14,8 +14,9 @@
 
         #player {
             height: 10px;
-            width: 600px;
+            width: 90%;
             padding: 40px;
+            alignment: center;
         }
 
         #messages {
@@ -23,10 +24,26 @@
         }
 
         #myRange {
-            width: 600px;
+            width: 90%;
         }
 
-        div, input, button {
+        #allcontrols {
+
+            position: fixed;
+            background-color: white;
+        }
+
+        #controls {
+            margin: 10px;
+            alignment: center;
+        }
+
+        button {
+            width: 200px;
+            height: 50px;
+        }
+
+        div, input {
             padding: 10px;
         }
     </style>
@@ -121,6 +138,7 @@
             }
             stack = [input_tracks.files.length - 1];
             play_next_track();
+            document.getElementById("player").volume = get_init_volume() / 100;
         }
 
         // function open_file() {
@@ -138,15 +156,16 @@
             set_message(file);
             var player = document.getElementById('player');
             //if(player.canPlayType(file))
-
             player.pause();
             player.src = file;
             player.play();
-            document.getElementById("player").volume = get_init_volume() / 100;
+
+
         }
 
         function stop() {
             var player = document.getElementById('player');
+
             player.pause();
 
             var button = document.getElementById('start_stop_button');
@@ -156,6 +175,7 @@
 
         function play() {
             var player = document.getElementById('player');
+
             player.play();
 
 
@@ -183,8 +203,6 @@
             if (marked != null) {
                 marked.id = "unmarked";
             }
-
-            set_message("TRAC1K");
         }
 
 
@@ -217,48 +235,54 @@
             play_file(set_next(id))
         }
 
-        var Model = function(){};
-        change_volume = function(volume)
-        {
+        var Model = function () {
+        };
+        change_volume = function (volume) {
 
             document.getElementById('player').volume = volume;
 
         };
         var myModel = Model();
-        var View = function(){};
-        function onchange_volume()
-        {
+        var View = function () {
+        };
+        function onchange_volume() {
             var volume = document.getElementById('myRange').value / 100;
             set_message(volume);
             change_volume(volume);
 
             document.getElementById('volume_label').innerHTML = volume;
         }
-        var  myView = View();
+        var myView = View();
 
 
-
-        var Stack = function(){};
-        var log = function(){};
+        var Stack = function () {
+        };
+        var log = function () {
+        };
     </script>
 </head>
 
 <body>
-<div>
-    <video
-            controls=""
-            id="player" onended="on_ended()">No support
-    </video>
-</div>
-<div>
-    <input type="file" name="filesToUpload" id="filesToUpload" multiple="" onchange="get_files();"/>
-</div>
 
-<div>
-    <button onclick="prev()" type="button">Prev Video</button>
-    <button id="start_stop_button" onclick="stop()" type="button">Stop Video</button>
-    <button onclick="next()" type="button">Next Video</button>
-    <br>
+<div id="allcontrols">
+    <div>
+        <video
+                controls=""
+                id="player" onended="on_ended()">No support
+        </video>
+    </div>
+    <div>
+        <input type="file" name="filesToUpload" id="filesToUpload" multiple="" onchange="get_files();"/>
+    </div>
+
+
+    <div id="controls">
+        <button onclick="prev()" type="button">Prev Video</button>
+        <button id="start_stop_button" onclick="stop()" type="button">Stop Video</button>
+        <button onclick="next()" type="button">Next Video</button>
+        <br>
+    </div>
+
     <label for="myRange">Volume</label>
     <input type="range" name="firstname" id="myRange" value="1" onchange="onchange_volume()">
     <label id="volume_label"></label>
