@@ -87,6 +87,13 @@
         var stack = [];
         var stack_pointer = 0;
 
+        function init(){
+            input_tracks = 0;
+            loop_tracklist = false;
+            stack = [];
+            stack_pointer = 0;
+        }
+
         function get_current() {
             return stack[stack_pointer];
         }
@@ -146,6 +153,7 @@
         }
 
         function get_files() {
+            init();
             input_tracks = document.getElementById('filesToUpload');
             var fileList = document.getElementById('fileList');
 
