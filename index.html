@@ -17,9 +17,13 @@
             height: 100%;
         }
 
-        #filesToUpload {
+        #filesToUpload, #drop_menu {
 
             background-color: aquamarine;
+        }
+        #menu_opener:hover {
+
+            cursor: hand;
         }
         #header {
             /* Provide scrollbars if needed and fix the header dimensions */
@@ -78,17 +82,43 @@
         }
     </style>
 
+
     <script type="text/javascript">
-        // Todo debug stack
+        function create_check_box()
+        {
+            var x = document.createElement("INPUT");
+            x.setAttribute("type", "checkbox");
+            x.onclick = "";
+            return x;
+        }
+
+        function open_menu()
+        {
+            //document.getElementById('filesToUpload').style.opacity = "0.0";
+            var drop_menu = document.getElementById('drop_menu');
+            var drop_menu_container = document.getElementById('drop_menu_container');
+            if(drop_menu) {
+                drop_menu_container.removeChild(drop_menu);
+            }else
+            {
+                drop_menu = create_text_div("");
+                drop_menu.id = "drop_menu";
+                drop_menu_container.appendChild(drop_menu);
+
+                var check_box = create_check_box();
+                drop_menu.appendChild(check_box);
+            }
+        }
+
         // Todo use OOP
         // Todo fit to screen size
-        var input_tracks = 0;
+        var tracks = [];
         var loop_tracklist = false;
         var stack = [];
         var stack_pointer = 0;
 
         function init(){
-            input_tracks = 0;
+            tracks = [];
             loop_tracklist = false;
             stack = [];
             stack_pointer = 0;
@@ -99,7 +129,8 @@
         }
         function push_top() {
             var new_ele = stack[stack_pointer - 1] + 1;
-            if (new_ele == input_tracks.files.length) {
+            if (new_ele == tracks.length) {
+                //start playlist from top
                 new_ele = 0;
             }
             stack.push(new_ele);
@@ -109,7 +140,7 @@
 
             var new_ele = stack[0] - 1;
             if (new_ele == -1) {
-                new_ele = input_tracks.files.length - 1;
+                new_ele = tracks.length - 1;
             }
 
             var bottom = [new_ele];
@@ -152,9 +183,71 @@
             messages.appendChild(node);
         }
 
-        function get_files() {
+        function create_text_div(text)
+        {   var node = document.createElement("div");
+            var textnode = document.createTextNode(text);
+            node.appendChild(textnode);
+            return node;
+        }
+
+        function get_playlist_files(file_paths, fileList)
+        {
+
+            for (var i = 0; i < file_paths.length; i++) {
+                set_message(file_paths[i]);
+                var file = File(file_paths[i]);
+                set_message(file);
+                var filename = file.name;
+                var filetype = filename.split(".").pop();
+
+                if (filetype == "mp3") {
+                    set_message(filename);
+                    //save_new_track(file, fileList);
+                }
+            }
+        }
+
+        function readPlaylist(playlist_file, fileList) {
+            //Retrieve the first (and only!) File from the FileList object
+
+            var playlistfile_url = URL.createObjectURL(playlist_file);
+            set_message(Page.ResolveURL(playlist_file));
+            //document.getElementById("texttest").innerHTML = .;
+            if (playlist_file) {
+                var r = new FileReader();
+                r.onload = function(e) {
+                    var contents = e.target.result;
+                    //alert( "Got the playlist_file.n"
+                    //        +"name: " + playlist_file.name + "n"
+                    //        +"type: " + playlist_file.type + "n"
+                    //        +"size: " + playlist_file.size + " bytesn"
+                    //        + "starts with: " + contents.substr(1, contents.indexOf("n"))
+                    //);
+                    set_message(contents);
+                    get_playlist_files(contents.split("\n"), fileList)
+                };
+                r.readAsText(playlist_file);
+            } else {
+                alert("Failed to load playlist_file");
+            }
+
+        }
+
+        function save_new_track(file, fileList){
+
+            var node = create_text_div(file.name);
+            node.className = "track";
+            //save track
+            set_message("HERE");
+            node.setAttribute("onClick", "play_id_track(" + tracks.length + ");");
+            tracks.push(file);
+            fileList.appendChild(node);
+
+        }
+
+        function get_files(){
             init();
-            input_tracks = document.getElementById('filesToUpload');
+            var input_tracks = document.getElementById('filesToUpload');
             var fileList = document.getElementById('fileList');
 
             //empty list for now...
@@ -163,21 +256,30 @@
             }
 
             //for every file...
-            for (var x = 0; x < input_tracks.files.length; x++) {
+            for (var i = 0; i < input_tracks.files.length; i++) {
                 //add to list
-                //text1 = 'File ' + (x + 1) + ':  ' + input_tracks.files[x].name;
-                var text1 = input_tracks.files[x].name;
-                var node = document.createElement("div");                 // Create a <li> node
-                node.className = "track";
-                node.setAttribute("onClick", "play_id_track(" + x + ");");
-                var textnode = document.createTextNode(text1);         // Create a text node
+                //text1 = 'File ' + (i + 1) + ':  ' + input_tracks.files[i].name;
+                var filename = input_tracks.files[i].name;
+                var filetype = filename.split(".").pop();
 
-                node.appendChild(textnode);                              // Append the text to <li>
-                fileList.appendChild(node);     // Append <li> to <ul> with id="myList"
+                if (filetype == "mp3") {
+
+                    save_new_track(input_tracks.files[i], fileList);
+
+                } else {
+                    if (filetype == "m3u"){
+
+                        readPlaylist((input_tracks.files[i]), fileList);
+                    }
+                }
+
+                set_message("loaded");
             }
-            stack = [input_tracks.files.length - 1];
+
+            stack = [tracks.length - 1];
             play_next_track();
             document.getElementById("player").volume = get_init_volume() / 100;
+
         }
 
         // function open_file() {
@@ -188,16 +290,18 @@
 
         function play_file(track)
         {
-            mark_current_file_view(track);
-            set_message(track);
-            var file = URL.createObjectURL(input_tracks.files[track]);
 
-            set_message(file.name);
+            mark_current_file_view(track);
+            var file_url = window.URL.createObjectURL(tracks[track]);
+            //file_url = window.URL.createObjectURL(new File("file:///D:/Musik/Collection/AMV - Courage to tell a lie.mp3"));
+
+
             var player = document.getElementById('player');
-            //if(player.canPlayType(file))
+            //if(player.canPlayType(file_url))
             player.pause();
-            player.src = file;
+            player.src = file_url;
             player.play();
+            //set_message(file_url+"/../Collection/AMV - Courage to tell a lie.mp3");
 
 
         }
@@ -235,7 +339,7 @@
 
         function unmark_current_file_view() {
             var marked = document.getElementById("marked");
-            set_message(marked);
+
             if (marked != null) {
                 marked.id = "unmarked";
             }
@@ -300,6 +404,9 @@
 
 <div id="header">
 <div id="">
+    <div id="drop_menu_container">
+    <a><div id="menu_opener" onclick="open_menu()">Open Menu</div></a>
+    </div>
     <div>
         <video
                 controls
@@ -334,6 +441,7 @@
 </div>
 
 <ol id="messages"></ol>
+<div id="texttest"></div>
 </div>
 <!--[if lt IE 7]>
 <script type="text/javascript">
