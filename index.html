@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Player</title>
     <style type="text/css">
         body,
@@ -21,16 +21,18 @@
 
             background-color: aquamarine;
         }
+
         #menu_opener:hover {
 
             cursor: hand;
         }
+
         #header {
             /* Provide scrollbars if needed and fix the header dimensions */
             overflow: auto;
             position: absolute;
             width: 100%;
-            height:  500px;
+            height: 500px;
         }
 
         #main {
@@ -41,9 +43,6 @@
             top: 500px;
             bottom: 0;
             padding: 1px;
-        }
-        .track {
-            background-color: white;
         }
 
         #marked {
@@ -72,6 +71,14 @@
 
         }
 
+        .track {
+            background-color: white;
+        }
+
+        .windowable {
+            onclick: white;
+        }
+
         button {
             width: 200px;
             height: 50px;
@@ -84,23 +91,20 @@
 
 
     <script type="text/javascript">
-        function create_check_box()
-        {
+        function create_check_box() {
             var x = document.createElement("INPUT");
             x.setAttribute("type", "checkbox");
             x.onclick = "";
             return x;
         }
 
-        function open_menu()
-        {
+        function open_menu() {
             //document.getElementById('filesToUpload').style.opacity = "0.0";
             var drop_menu = document.getElementById('drop_menu');
             var drop_menu_container = document.getElementById('drop_menu_container');
-            if(drop_menu) {
+            if (drop_menu) {
                 drop_menu_container.removeChild(drop_menu);
-            }else
-            {
+            } else {
                 drop_menu = create_text_div("");
                 drop_menu.id = "drop_menu";
                 drop_menu_container.appendChild(drop_menu);
@@ -117,7 +121,7 @@
         var stack = [];
         var stack_pointer = 0;
 
-        function init(){
+        function init() {
             tracks = [];
             loop_tracklist = false;
             stack = [];
@@ -183,15 +187,14 @@
             messages.appendChild(node);
         }
 
-        function create_text_div(text)
-        {   var node = document.createElement("div");
+        function create_text_div(text) {
+            var node = document.createElement("div");
             var textnode = document.createTextNode(text);
             node.appendChild(textnode);
             return node;
         }
 
-        function get_playlist_files(file_paths, fileList)
-        {
+        function get_playlist_files(file_paths, fileList) {
 
             for (var i = 0; i < file_paths.length; i++) {
                 set_message(file_paths[i]);
@@ -215,7 +218,7 @@
             //document.getElementById("texttest").innerHTML = .;
             if (playlist_file) {
                 var r = new FileReader();
-                r.onload = function(e) {
+                r.onload = function (e) {
                     var contents = e.target.result;
                     //alert( "Got the playlist_file.n"
                     //        +"name: " + playlist_file.name + "n"
@@ -233,7 +236,7 @@
 
         }
 
-        function save_new_track(file, fileList){
+        function save_new_track(file, fileList) {
 
             var node = create_text_div(file.name);
             node.className = "track";
@@ -245,7 +248,7 @@
 
         }
 
-        function get_files(){
+        function get_files() {
             init();
             var input_tracks = document.getElementById('filesToUpload');
             var fileList = document.getElementById('fileList');
@@ -262,17 +265,13 @@
                 var filename = input_tracks.files[i].name;
                 var filetype = filename.split(".").pop();
 
-                if (filetype == "mp3") {
+                if (filetype == "m3u") {
+
+                    readPlaylist((input_tracks.files[i]), fileList);
+                } else {
 
                     save_new_track(input_tracks.files[i], fileList);
-
-                } else {
-                    if (filetype == "m3u"){
-
-                        readPlaylist((input_tracks.files[i]), fileList);
-                    }
                 }
-
                 set_message("loaded");
             }
 
@@ -288,8 +287,7 @@
         //     document.getElementById('boldStuff').innerHTML = loc;
         // }
 
-        function play_file(track)
-        {
+        function play_file(track) {
 
             mark_current_file_view(track);
             var file_url = window.URL.createObjectURL(tracks[track]);
@@ -313,7 +311,7 @@
 
             var button = document.getElementById('start_stop_button');
             button.setAttribute("onClick", "play();");
-            button.innerHTML = "Play Video";
+            button.innerHTML = "Play";
         }
 
         function play() {
@@ -322,7 +320,7 @@
 
             var button = document.getElementById('start_stop_button');
             button.setAttribute("onClick", "stop();");
-            button.innerHTML = "Stop Video";
+            button.innerHTML = "Stop";
 
         }
 
@@ -403,45 +401,47 @@
 <body>
 
 <div id="header">
-<div id="">
-    <div id="drop_menu_container">
-    <a><div id="menu_opener" onclick="open_menu()">Open Menu</div></a>
-    </div>
-    <div>
-        <video
-                controls
-                id="player" onended="on_ended()" onvolumechange="change_volume_view()">No support for html5.
-        </video>
-    </div>
-    <div>
-        <input type="file" name="filesToUpload" id="filesToUpload" multiple="" onchange="get_files();"/>
-
-        <div id="controls">
-            <button onclick="prev()" type="button">Prev Video</button>
-            <button id="start_stop_button" onclick="stop()" type="button">Stop Video</button>
-            <button onclick="next()" type="button">Next Video</button>
-            <br>
+    <div id="">
+        <div id="drop_menu_container">
+            <a>
+                <div id="menu_opener" onclick="open_menu()">Open Menu</div>
+            </a>
         </div>
+        <div>
+            <video
+                    height="720" width="720"
+                    controls
+                    id="player" onended="on_ended()" onvolumechange="change_volume_view()">No support for html5.
+            </video>
+        </div>
+        <div>
+            <input type="file" name="filesToUpload" id="filesToUpload" multiple="" onchange="get_files();"/>
+
+            <div id="controls">
+                <button onclick="prev()" type="button">Prev</button>
+                <button id="start_stop_button" onclick="stop()" type="button">Stop</button>
+                <button onclick="next()" type="button">Next</button>
+                <br>
+            </div>
+        </div>
+
+
+        <label for="volume_slider">Volume</label>
+        <input type="range" name="firstname" id="volume_slider" value="1" onchange="onchange_volume_slider()">
+        <label id="volume_label"></label>
+        <p></p>
+        <br>
     </div>
-
-
-
-    <label for="volume_slider">Volume</label>
-    <input type="range" name="firstname" id="volume_slider" value="1" onchange="onchange_volume_slider()">
-    <label id="volume_label"></label>
-    <p></p>
-    <br>
-</div>
 
 </div>
 <div id="main">
 
-<div id="fileList">
-    <div class="track" id="marked">No Files Selected</div>
-</div>
+    <div id="fileList">
+        <div class="track" id="marked">No Files Selected</div>
+    </div>
 
-<ol id="messages"></ol>
-<div id="texttest"></div>
+    <ol id="messages"></ol>
+    <div id="texttest"></div>
 </div>
 <!--[if lt IE 7]>
 <script type="text/javascript">
