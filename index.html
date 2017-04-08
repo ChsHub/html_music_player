@@ -45,7 +45,11 @@
             padding: 1px;
         }
 
-        #marked {
+        .track {
+            background-color: white;
+        }
+
+        .marked {
             background-color: lightskyblue;
         }
 
@@ -71,33 +75,37 @@
 
         }
 
-        .track {
-            background-color: white;
-        }
-
         button {
             width: 200px;
             height: 50px;
+            font-size: 30px;
         }
 
         div, input {
             padding: 10px;
         }
     </style>
-
-
     <script type="text/javascript">
+        // https://jsbin.com/moyiro/4/edit?html,css,output
+        // debugging
+        function info(text) {
+            let messages = document.getElementById('messages');
+            let node = document.createElement("LI");                 // Create a <li> node
+            node.appendChild(document.createTextNode(text));
+            messages.appendChild(node);
+        }
+
         function create_check_box() {
-            var x = document.createElement("INPUT");
-            x.setAttribute("type", "checkbox");
-            x.onclick = "";
-            return x;
+            let checkbox = document.createElement("INPUT");
+            checkbox.setAttribute("type", "checkbox");
+            checkbox.onclick = "";
+            return checkbox;
         }
 
         function open_menu() {
             //document.getElementById('filesToUpload').style.opacity = "0.0";
-            var drop_menu = document.getElementById('drop_menu');
-            var drop_menu_container = document.getElementById('drop_menu_container');
+            let drop_menu = document.getElementById('drop_menu');
+            let drop_menu_container = document.getElementById('drop_menu_container');
             if (drop_menu) {
                 drop_menu_container.removeChild(drop_menu);
             } else {
@@ -146,7 +154,7 @@
             var bottom = [new_ele];
 
             stack = bottom.concat(stack);
-            set_message(stack);
+            info(stack);
             stack_pointer = 0;
         }
 
@@ -174,43 +182,26 @@
             return stack[stack_pointer];
         }
 
-
-        function set_message(text) {
-            var messages = document.getElementById('messages');
-            var textnode = document.createTextNode(text + "\n");
-            var node = document.createElement("LI");                 // Create a <li> node
-            node.appendChild(textnode);
-            messages.appendChild(node);
-        }
-
         function create_text_div(text) {
-            var node = document.createElement("div");
-            var textnode = document.createTextNode(text);
-            node.appendChild(textnode);
+            let node = document.createElement("div");
+            node.appendChild(document.createTextNode(text));
             return node;
         }
 
         function get_playlist_files(file_paths, fileList) {
-
-            for (var i = 0; i < file_paths.length; i++) {
-                set_message(file_paths[i]);
-                var file = File(file_paths[i]);
-                set_message(file);
-                var filename = file.name;
-                var filetype = filename.split(".").pop();
-
-                if (filetype == "mp3") {
-                    set_message(filename);
-                    //save_new_track(file, fileList);
-                }
+            for (file_path of file_paths) {
+                let file = File(file_path);
+                let filename = file.name;
+                let filetype = filename.split(".").pop(); // TODO check file type?
             }
         }
 
+        // TODO Legacy
         function readPlaylist(playlist_file, fileList) {
             //Retrieve the first (and only!) File from the FileList object
 
             var playlistfile_url = URL.createObjectURL(playlist_file);
-            set_message(Page.ResolveURL(playlist_file));
+            info(Page.ResolveURL(playlist_file));
             //document.getElementById("texttest").innerHTML = .;
             if (playlist_file) {
                 var r = new FileReader();
@@ -222,7 +213,7 @@
                     //        +"size: " + playlist_file.size + " bytesn"
                     //        + "starts with: " + contents.substr(1, contents.indexOf("n"))
                     //);
-                    set_message(contents);
+                    info(contents);
                     get_playlist_files(contents.split("\n"), fileList)
                 };
                 r.readAsText(playlist_file);
@@ -233,164 +224,88 @@
         }
 
         function save_new_track(file, fileList) {
-
-            var node = create_text_div(file.name);
-            node.className = "track";
-            //save track
-            set_message("HERE");
-            node.setAttribute("onClick", "play_id_track(" + tracks.length + ");");
             tracks.push(file);
+            let node = create_text_div(file.name);
+            node.className = "track";
+            node.setAttribute("onClick", "play_id_track(" + tracks.length + ");");
             fileList.appendChild(node);
-
         }
 
         function get_files() {
             init();
-            var input_tracks = document.getElementById('filesToUpload');
-            var fileList = document.getElementById('fileList');
-
-            //empty list for now...
+            let input_tracks = document.getElementById('filesToUpload');
+            let fileList = document.getElementById('fileList');
+            let player = document.getElementById('player');
+            // remove old elements
             while (fileList.hasChildNodes()) {
                 fileList.removeChild(fileList.lastChild);
             }
 
-            //for every file...
-            for (var i = 0; i < input_tracks.files.length; i++) {
-                //add to list
-                //text1 = 'File ' + (i + 1) + ':  ' + input_tracks.files[i].name;
-                var filename = input_tracks.files[i].name;
-                var filetype = filename.split(".").pop();
+            for (let track_file of input_tracks.files) {
+                let file_type = track_file.name.split(".").pop();
 
-                if (filetype == "m3u") {
-
-                    readPlaylist((input_tracks.files[i]), fileList);
-                } else {
-
-                    save_new_track(input_tracks.files[i], fileList);
+                if (file_type == "m3u") {
+                    readPlaylist(track_file, fileList);
+                } else if (player.canPlayType('audio/' + file_type) || player.canPlayType('video/' + file_type)) {
+                    save_new_track(track_file, fileList);
                 }
-                set_message("loaded");
             }
 
             stack = [tracks.length - 1];
             play_next_track();
-            document.getElementById("player").volume = get_init_volume() / 100;
-
+            change_volume(10 / 100);
+            // inital volume
         }
-
-        // function open_file() {
-        //     var loc = window.location.pathname;
-        //     var dir = loc.substring(0, loc.lastIndexOf('/'));
-        //     document.getElementById('boldStuff').innerHTML = loc;
-        // }
 
         function play_file(track) {
 
-            mark_current_file_view(track);
-            var file_url = window.URL.createObjectURL(tracks[track]);
-            //file_url = window.URL.createObjectURL(new File("file:///D:/Musik/Collection/AMV - Courage to tell a lie.mp3"));
+            for (marked of document.getElementsByClassName("marked")) {
+                marked.className = "track";
+            }
+            document.getElementsByClassName("track")[track].className = "marked";
 
-
-            var player = document.getElementById('player');
-            //if(player.canPlayType(file_url))
-            player.pause();
-            player.src = file_url;
-            player.play();
-            //set_message(file_url+"/../Collection/AMV - Courage to tell a lie.mp3");
-
-
+            let file_url = window.URL.createObjectURL(tracks[track]);
+            stop();
+            document.getElementById('player').src = file_url;
+            play();
         }
 
         function stop() {
-            var player = document.getElementById('player');
+            let player = document.getElementById('player');
 
             player.pause();
 
-            var button = document.getElementById('start_stop_button');
+            let button = document.getElementById('start_stop_button');
             button.setAttribute("onClick", "play();");
-            button.innerHTML = "Play";
+            button.innerHTML = "&#9655;";
         }
 
         function play() {
-            var player = document.getElementById('player');
+            let player = document.getElementById('player');
             player.play();
 
-            var button = document.getElementById('start_stop_button');
+            let button = document.getElementById('start_stop_button');
             button.setAttribute("onClick", "stop();");
-            button.innerHTML = "Stop";
-
+            button.innerHTML = "&#10072; &#10072;";
         }
-
-        function get_init_volume() {
-            return 10;
-        }
-
-        function mark_current_file_view(track) {
-            var track_view = document.getElementsByClassName("track")[track];
-
-            track_view.id = "marked";
-
-        }
-
-        function unmark_current_file_view() {
-            var marked = document.getElementById("marked");
-
-            if (marked != null) {
-                marked.id = "unmarked";
-            }
-        }
-
-
-        function on_ended() {
-            play_next_track();
-        }
-
-        function next() {
-            play_next_track();
-        }
-
-        function prev() {
-            play_prev_track();
-        }
-
 
         function play_next_track() {
-            unmark_current_file_view();
-
             play_file(get_next())
         }
 
         function play_prev_track() {
-            unmark_current_file_view();
             play_file(get_prev())
         }
 
         function play_id_track(id) {
-            unmark_current_file_view();
             play_file(set_next(id))
         }
 
-
         function change_volume(volume) {
-
             document.getElementById('player').volume = volume;
-            set_message(volume);
-        }
-
-
-        function change_volume_view() {
-            var volume = document.getElementById('player').volume;
             document.getElementById('volume_label').innerHTML = volume;
             document.getElementById('volume_slider').value = volume * 100;
         }
-
-        function onchange_volume_slider() {
-            var volume = document.getElementById('volume_slider').value / 100;
-            change_volume(volume);
-
-            document.getElementById('volume_label').innerHTML = volume;
-        }
-
-
     </script>
 </head>
 
@@ -404,26 +319,24 @@
             </a>
         </div>
         <div>
-            <video
-                    height="720" width="720"
-                    controls
-                    id="player" onended="on_ended()" onvolumechange="change_volume_view()">No support for html5.
+            <video height="720" width="720" id="player" onended="play_next_track()" controls
+                   onvolumechange="change_volume(this.volume)">No support for html5.
             </video>
         </div>
         <div>
             <input type="file" name="filesToUpload" id="filesToUpload" multiple="" onchange="get_files();"/>
 
             <div id="controls">
-                <button onclick="prev()" type="button">Prev</button>
-                <button id="start_stop_button" onclick="stop()" type="button">Stop</button>
-                <button onclick="next()" type="button">Next</button>
+                <button onclick="play_prev_track()" type="button">&#10703;</button>
+                <button id="start_stop_button" onclick="stop()" type="button"></button>
+                <button onclick="play_next_track()" type="button">&#10704;</button>
                 <br>
             </div>
         </div>
 
 
-        <label for="volume_slider">Volume</label>
-        <input type="range" name="firstname" id="volume_slider" value="1" onchange="onchange_volume_slider()">
+        <label for="volume_slider">音量</label>
+        <input type="range" name="firstname" id="volume_slider" value="1" onchange="change_volume(this.value / 100)">
         <label id="volume_label"></label>
         <p></p>
         <br>
@@ -439,6 +352,7 @@
     <ol id="messages"></ol>
     <div id="texttest"></div>
 </div>
+
 <!--[if lt IE 7]>
 <script type="text/javascript">
     var elMain = document.getElementById('main');
