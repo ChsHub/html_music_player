@@ -188,47 +188,13 @@
             return node;
         }
 
-        function get_playlist_files(file_paths, fileList) {
-            for (file_path of file_paths) {
-                let file = File(file_path);
-                let filename = file.name;
-                let filetype = filename.split(".").pop(); // TODO check file type?
-            }
-        }
-
-        // TODO Legacy
-        function readPlaylist(playlist_file, fileList) {
-            //Retrieve the first (and only!) File from the FileList object
-
-            var playlistfile_url = URL.createObjectURL(playlist_file);
-            info(Page.ResolveURL(playlist_file));
-            //document.getElementById("texttest").innerHTML = .;
-            if (playlist_file) {
-                var r = new FileReader();
-                r.onload = function (e) {
-                    var contents = e.target.result;
-                    //alert( "Got the playlist_file.n"
-                    //        +"name: " + playlist_file.name + "n"
-                    //        +"type: " + playlist_file.type + "n"
-                    //        +"size: " + playlist_file.size + " bytesn"
-                    //        + "starts with: " + contents.substr(1, contents.indexOf("n"))
-                    //);
-                    info(contents);
-                    get_playlist_files(contents.split("\n"), fileList)
-                };
-                r.readAsText(playlist_file);
-            } else {
-                alert("Failed to load playlist_file");
-            }
-
-        }
-
         function save_new_track(file, fileList) {
-            tracks.push(file);
+
             let node = create_text_div(file.name);
             node.className = "track";
             node.setAttribute("onClick", "play_id_track(" + tracks.length + ");");
             fileList.appendChild(node);
+            tracks.push(file);
         }
 
         function get_files() {
@@ -244,9 +210,7 @@
             for (let track_file of input_tracks.files) {
                 let file_type = track_file.name.split(".").pop();
 
-                if (file_type == "m3u") {
-                    readPlaylist(track_file, fileList);
-                } else if (player.canPlayType('audio/' + file_type) || player.canPlayType('video/' + file_type)) {
+                if (player.canPlayType('audio/' + file_type) || player.canPlayType('video/' + file_type)) {
                     save_new_track(track_file, fileList);
                 }
             }
@@ -271,9 +235,7 @@
         }
 
         function stop() {
-            let player = document.getElementById('player');
-
-            player.pause();
+            document.getElementById('player').pause();
 
             let button = document.getElementById('start_stop_button');
             button.setAttribute("onClick", "play();");
@@ -281,8 +243,7 @@
         }
 
         function play() {
-            let player = document.getElementById('player');
-            player.play();
+            document.getElementById('player').play();
 
             let button = document.getElementById('start_stop_button');
             button.setAttribute("onClick", "stop();");
@@ -335,7 +296,7 @@
         </div>
 
 
-        <label for="volume_slider">音量</label>
+        <label for="volume_slider">VOLUME</label>
         <input type="range" name="firstname" id="volume_slider" value="1" onchange="change_volume(this.value / 100)">
         <label id="volume_label"></label>
         <p></p>
@@ -345,26 +306,10 @@
 </div>
 <div id="main">
 
-    <div id="fileList">
-        <div class="track" id="marked">No Files Selected</div>
-    </div>
+    <div id="fileList"></div>
 
     <ol id="messages"></ol>
     <div id="texttest"></div>
 </div>
-
-<!--[if lt IE 7]>
-<script type="text/javascript">
-    var elMain = document.getElementById('main');
-
-    setMainDims();
-    document.body.onresize = setMainDims;
-
-    function setMainDims() {
-        elMain.style.height = (document.body.clientHeight - 200) + 'px';
-        elMain.style.width = '99%'
-        setTimeout("elMain.style.width = '100%'", 0);
-    }
-</script>
 </body>
 </html>
