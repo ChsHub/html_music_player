@@ -113,17 +113,17 @@
                 drop_menu.id = "drop_menu";
                 drop_menu_container.appendChild(drop_menu);
 
-                var check_box = create_check_box();
+                let check_box = create_check_box();
                 drop_menu.appendChild(check_box);
             }
         }
 
         // Todo use OOP
         // Todo fit to screen size
-        var tracks = [];
-        var loop_tracklist = false;
-        var stack = [];
-        var stack_pointer = 0;
+        let tracks = [];
+        let loop_tracklist = false;
+        let stack = [];
+        let stack_pointer = 0;
 
         function init() {
             tracks = [];
@@ -136,7 +136,7 @@
             return stack[stack_pointer];
         }
         function push_top() {
-            var new_ele = stack[stack_pointer - 1] + 1;
+            let new_ele = stack[stack_pointer - 1] + 1;
             if (new_ele == tracks.length) {
                 //start playlist from top
                 new_ele = 0;
@@ -146,12 +146,12 @@
 
         function push_bottom() {
 
-            var new_ele = stack[0] - 1;
+            let new_ele = stack[0] - 1;
             if (new_ele == -1) {
                 new_ele = tracks.length - 1;
             }
 
-            var bottom = [new_ele];
+            let bottom = [new_ele];
 
             stack = bottom.concat(stack);
             info(stack);
@@ -209,6 +209,11 @@
 
             for (let track_file of input_tracks.files) {
                 let file_type = track_file.name.split(".").pop();
+
+                // TODO better solution
+                if (file_type === "m4a"){
+                    file_type = "mp4";
+                }
 
                 if (player.canPlayType('audio/' + file_type) || player.canPlayType('video/' + file_type)) {
                     save_new_track(track_file, fileList);
