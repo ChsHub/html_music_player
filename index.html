@@ -236,6 +236,7 @@
             let file_url = window.URL.createObjectURL(tracks[track]);
             stop();
             document.getElementById('player').src = file_url;
+            document.getElementById('player').height = "720";
             play();
         }
 
