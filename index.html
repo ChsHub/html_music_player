@@ -79,6 +79,11 @@
             width: 200px;
             height: 50px;
             font-size: 30px;
+            line-height: 20px;
+        }
+
+        #option_button {
+            width: 50px;
         }
 
         div, input {
@@ -89,14 +94,14 @@
         // https://jsbin.com/moyiro/4/edit?html,css,output
         // debugging
         function info(text) {
-            let messages = document.getElementById('messages');
-            let node = document.createElement("LI");                 // Create a <li> node
+            var messages = document.getElementById('messages');
+            var node = document.createElement("LI");                 // Create a <li> node
             node.appendChild(document.createTextNode(text));
             messages.appendChild(node);
         }
 
         function create_check_box() {
-            let checkbox = document.createElement("INPUT");
+            var checkbox = document.createElement("INPUT");
             checkbox.setAttribute("type", "checkbox");
             checkbox.onclick = "";
             return checkbox;
@@ -104,8 +109,8 @@
 
         function open_menu() {
             //document.getElementById('filesToUpload').style.opacity = "0.0";
-            let drop_menu = document.getElementById('drop_menu');
-            let drop_menu_container = document.getElementById('drop_menu_container');
+            var drop_menu = document.getElementById('drop_menu');
+            var drop_menu_container = document.getElementById('drop_menu_container');
             if (drop_menu) {
                 drop_menu_container.removeChild(drop_menu);
             } else {
@@ -113,17 +118,18 @@
                 drop_menu.id = "drop_menu";
                 drop_menu_container.appendChild(drop_menu);
 
-                let check_box = create_check_box();
+                var check_box = create_check_box();
                 drop_menu.appendChild(check_box);
             }
         }
 
         // Todo use OOP
         // Todo fit to screen size
-        let tracks = [];
-        let loop_tracklist = false;
-        let stack = [];
-        let stack_pointer = 0;
+        var tracks = [];
+        var loop_tracklist = false;
+        var stack = [];
+        var stack_pointer = 0;
+        var is_random = False;
 
         function init() {
             tracks = [];
@@ -137,7 +143,7 @@
         }
         function push_top() {
             let new_ele = stack[stack_pointer - 1] + 1;
-            if (new_ele == tracks.length) {
+            if (new_ele >= tracks.length) {
                 //start playlist from top
                 new_ele = 0;
             }
@@ -146,12 +152,12 @@
 
         function push_bottom() {
 
-            let new_ele = stack[0] - 1;
-            if (new_ele == -1) {
+            var new_ele = stack[0] - 1;
+            if (new_ele <= -1) {
                 new_ele = tracks.length - 1;
             }
 
-            let bottom = [new_ele];
+            var bottom = [new_ele];
 
             stack = bottom.concat(stack);
             info(stack);
@@ -167,7 +173,7 @@
         function get_next() {
             stack_pointer++;
 
-            if (stack.length == stack_pointer) {
+            if (stack_pointer === stack.length) {
                 push_top();
             }
             return stack[stack_pointer];
@@ -176,47 +182,50 @@
         function get_prev() {
             stack_pointer--;
 
-            if (-1 == stack_pointer) {
+            if (-1 === stack_pointer) {
                 push_bottom();
             }
             return stack[stack_pointer];
         }
 
         function create_text_div(text) {
-            let node = document.createElement("div");
+            var node = document.createElement("div");
             node.appendChild(document.createTextNode(text));
             return node;
         }
 
         function save_new_track(file, fileList) {
 
-            let node = create_text_div(file.name);
+            var node = create_text_div(file.name);
             node.className = "track";
             node.setAttribute("onClick", "play_id_track(" + tracks.length + ");");
             fileList.appendChild(node);
             tracks.push(file);
         }
 
+        function change_volume(volume) {
+            document.getElementById('player').volume = volume;
+            document.getElementById('volume_label').innerHTML = volume;
+            document.getElementById('volume_slider').value = volume * 100;
+        }
+
         function get_files() {
             init();
-            let input_tracks = document.getElementById('filesToUpload');
-            let fileList = document.getElementById('fileList');
-            let player = document.getElementById('player');
+            var input_tracks = document.getElementById('filesToUpload');
+            var fileList = document.getElementById('fileList');
+            var player = document.getElementById('player');
             // remove old elements
             while (fileList.hasChildNodes()) {
                 fileList.removeChild(fileList.lastChild);
             }
 
-            for (let track_file of input_tracks.files) {
-                let file_type = track_file.name.split(".").pop();
+            for (var track_file of input_tracks.files) {
+                var file_type = track_file.type;
 
-                // TODO better solution
-                if (file_type === "m4a"){
-                    file_type = "mp4";
-                }
-
-                if (player.canPlayType('audio/' + file_type) || player.canPlayType('video/' + file_type)) {
+                if (player.canPlayType(file_type)) {
                     save_new_track(track_file, fileList);
+                }else{
+                    info("Can't play "+track_file.name);
                 }
             }
 
@@ -233,7 +242,7 @@
             }
             document.getElementsByClassName("track")[track].className = "marked";
 
-            let file_url = window.URL.createObjectURL(tracks[track]);
+            var file_url = window.URL.createObjectURL(tracks[track]);
             stop();
             document.getElementById('player').src = file_url;
             document.getElementById('player').height = "720";
@@ -243,7 +252,7 @@
         function stop() {
             document.getElementById('player').pause();
 
-            let button = document.getElementById('start_stop_button');
+            var button = document.getElementById('start_stop_button');
             button.setAttribute("onClick", "play();");
             button.innerHTML = "&#9655;";
         }
@@ -251,7 +260,7 @@
         function play() {
             document.getElementById('player').play();
 
-            let button = document.getElementById('start_stop_button');
+            var button = document.getElementById('start_stop_button');
             button.setAttribute("onClick", "stop();");
             button.innerHTML = "&#10072; &#10072;";
         }
@@ -268,11 +277,20 @@
             play_file(set_next(id))
         }
 
-        function change_volume(volume) {
-            document.getElementById('player').volume = volume;
-            document.getElementById('volume_label').innerHTML = volume;
-            document.getElementById('volume_slider').value = volume * 100;
+        function set_random() {
+            is_random = True;
+            var button = document.getElementById('option_button');
+            button.innerHTML = "&#10536";
+            button.setAttribute("onClick", "set_sorted();");
         }
+
+        function set_sorted() {
+            is_random = False;
+            var button = document.getElementById('option_button');
+            button.innerHTML = "&#8649";
+            button.setAttribute("onClick", "set_random();");
+        }
+
     </script>
 </head>
 
@@ -295,9 +313,9 @@
 
             <div id="controls">
                 <button onclick="play_prev_track()" type="button">&#10703;</button>
-                <button id="start_stop_button" onclick="stop()" type="button"></button>
+                <button id="start_stop_button" onclick="stop()" type="button">&#9655;</button>
                 <button onclick="play_next_track()" type="button">&#10704;</button>
-                <br>
+                <button onclick="set_random()" id="option_button">&#8649;</button>
             </div>
         </div>
 
