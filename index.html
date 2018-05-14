@@ -15,11 +15,13 @@
             overflow: hidden;
             width: 100%;
             height: 100%;
+            margin: 0;
+            padding: 0;
         }
 
         #filesToUpload, #drop_menu {
 
-            background-color: aquamarine;
+            background-color: lightskyblue;
         }
 
         #menu_opener:hover {
@@ -53,15 +55,16 @@
             background-color: lightskyblue;
         }
 
+        .debug {
+            padding: 10px;
+            background-color: #fa87ce;
+        }
+
         #player {
             height: 20px;
             width: 90%;
             padding: 40px;
             alignment: center;
-        }
-
-        #messages {
-            background-color: firebrick;
         }
 
         #volume_slider {
@@ -93,11 +96,16 @@
     <script type="text/javascript">
         // https://jsbin.com/moyiro/4/edit?html,css,output
         // debugging
+        var debugging = true;
         function info(text) {
-            var messages = document.getElementById('messages');
-            var node = document.createElement("LI");                 // Create a <li> node
-            node.appendChild(document.createTextNode(text));
-            messages.appendChild(node);
+            if (debugging)
+            {
+                var messages = document.getElementById('messages');
+                var node = document.createElement("LI");                 // Create a <li> node
+                node.appendChild(document.createTextNode(text));
+                messages.appendChild(node);
+                node.className = 'debug';
+            }//no else
         }
 
         function create_check_box() {
@@ -172,8 +180,8 @@
 
         function get_next() {
             stack_pointer++;
-
-            if (stack_pointer === stack.length) {
+            info("get_next()");
+            if (stack_pointer == stack.length) {
                 push_top();
             }
             return stack[stack_pointer];
@@ -182,7 +190,7 @@
         function get_prev() {
             stack_pointer--;
 
-            if (-1 === stack_pointer) {
+            if (-1 == stack_pointer) {
                 push_bottom();
             }
             return stack[stack_pointer];
@@ -278,17 +286,18 @@
         }
 
         function set_random() {
-            is_random = True;
             var button = document.getElementById('option_button');
             button.innerHTML = "&#10536";
             button.setAttribute("onClick", "set_sorted();");
+            is_random = true;
         }
 
         function set_sorted() {
-            is_random = False;
+
             var button = document.getElementById('option_button');
             button.innerHTML = "&#8649";
             button.setAttribute("onClick", "set_random();");
+            is_random = false;
         }
 
     </script>
@@ -320,7 +329,11 @@
         </div>
 
 
-        <label for="volume_slider">VOLUME</label>
+        <svg height="50" width="50">
+            <polygon points="10,20 20,20 30,10 30,40 20,30 10,30"
+                     style="fill:white;stroke:black;stroke-width:1px">
+            </polygon>
+        </svg>
         <input type="range" name="firstname" id="volume_slider" value="1" onchange="change_volume(this.value / 100)">
         <label id="volume_label"></label>
         <p></p>
