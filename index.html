@@ -108,29 +108,6 @@
             }//no else
         }
 
-        function create_check_box() {
-            var checkbox = document.createElement("INPUT");
-            checkbox.setAttribute("type", "checkbox");
-            checkbox.onclick = "";
-            return checkbox;
-        }
-
-        function open_menu() {
-            //document.getElementById('filesToUpload').style.opacity = "0.0";
-            var drop_menu = document.getElementById('drop_menu');
-            var drop_menu_container = document.getElementById('drop_menu_container');
-            if (drop_menu) {
-                drop_menu_container.removeChild(drop_menu);
-            } else {
-                drop_menu = create_text_div("");
-                drop_menu.id = "drop_menu";
-                drop_menu_container.appendChild(drop_menu);
-
-                var check_box = create_check_box();
-                drop_menu.appendChild(check_box);
-            }
-        }
-
         // Todo use OOP
         // Todo fit to screen size
         var tracks = [];
@@ -307,11 +284,6 @@
 
 <div id="header">
     <div id="">
-        <div id="drop_menu_container">
-            <a>
-                <div id="menu_opener" onclick="open_menu()">Open Menu</div>
-            </a>
-        </div>
         <div>
             <video height="720" width="720" id="player" onended="play_next_track()" controls
                    onvolumechange="change_volume(this.volume)">No support for html5.
