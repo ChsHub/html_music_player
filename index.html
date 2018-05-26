@@ -1,5 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
+<!--TODO The html/css layout of the top part can be improved. At the moment the top part is just fixed height. I wish it would adjust the height to the elements inside. Also the buttons, player, file input and volume slider don't really align with each other.
+    TODO When you jump to the next song, the track list(scroll) should focus on the next song.
+    TODO Add a way to adjust the player size, when playing a video. Maybe something like a vertical slider.
+-->
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Player</title>
@@ -19,7 +23,7 @@
             padding: 0;
         }
 
-        #filesToUpload, #drop_menu {
+        #filesToUpload {
 
             background-color: lightskyblue;
         }
@@ -79,14 +83,24 @@
         }
 
         button {
-            width: 200px;
-            height: 50px;
-            font-size: 30px;
-            line-height: 20px;
+            /*padding-top: 0.3em;
+            padding-bottom: 0.3em;
+            line-height:1em;*/
+            width: 5.6em;
+            height: 1.6em;
+            /*height: 1.6em;line-height: 20px;*/
+            font-size: 40px;
+            padding-bottom: 0.35em;
+            /*line-height: 1em;*/
+            cursor: pointer;
         }
 
         #option_button {
-            width: 50px;
+            width: 1.6em;
+            padding-bottom: 0.45em;
+            /*padding-left: 0.6em;
+            padding-right: 0.6em;width: 6.6em;
+            width: 50px;*/
         }
 
         div, input {
@@ -97,9 +111,9 @@
         // https://jsbin.com/moyiro/4/edit?html,css,output
         // debugging
         var debugging = true;
+
         function info(text) {
-            if (debugging)
-            {
+            if (debugging) {
                 var messages = document.getElementById('messages');
                 var node = document.createElement("LI");                 // Create a <li> node
                 node.appendChild(document.createTextNode(text));
@@ -111,67 +125,76 @@
         // Todo use OOP
         // Todo fit to screen size
         var tracks = [];
-        var loop_tracklist = false;
         var stack = [];
         var stack_pointer = 0;
-        var is_random = False;
+        var loop_tracklist = true;
+        var play_random = false;
 
         function init() {
             tracks = [];
-            loop_tracklist = false;
             stack = [];
             stack_pointer = 0;
+            loop_tracklist = false;
         }
 
-        function get_current() {
+        /* +++ Stack +++*/
+
+        //  get next track from stack
+        //  or if at stack end: increment or random track
+        function get_next() {
+            stack_pointer++;
+            if (stack_pointer >= stack.length) {
+
+                var next_track = 0;
+                if (play_random) {
+                    var tracks_played_count = stack.length % tracks.length;
+
+                    next_track = Math.floor(Math.random() * (tracks.length - tracks_played_count));
+                    // iterate tracks
+                    // generate list of tracks not on stack, exit when counter maches random index (next_track)
+                    var not_stack_count = -1;
+                    var track_count = -1;
+                    var last_played = stack.slice(stack.length - tracks_played_count, stack.length);
+                    while (not_stack_count < next_track) {
+                        track_count++;
+                        if (last_played.indexOf(track_count) <= -1) {
+                            not_stack_count++;
+                        }//no else
+                    }
+                    next_track = track_count;
+                } else {
+                    next_track = stack[stack_pointer - 1] + 1; // top stack track +1
+                    next_track %= tracks.length; // start playlist from zero
+                }
+                info("PUSH NEW ELE " + next_track);
+                stack.push(next_track);
+            }//no else
+
             return stack[stack_pointer];
-        }
-        function push_top() {
-            let new_ele = stack[stack_pointer - 1] + 1;
-            if (new_ele >= tracks.length) {
-                //start playlist from top
-                new_ele = 0;
-            }
-            stack.push(new_ele);
-        }
-
-        function push_bottom() {
-
-            var new_ele = stack[0] - 1;
-            if (new_ele <= -1) {
-                new_ele = tracks.length - 1;
-            }
-
-            var bottom = [new_ele];
-
-            stack = bottom.concat(stack);
-            info(stack);
-            stack_pointer = 0;
         }
 
         function set_next(id) {
-            stack_pointer++;
-            stack.push(id);
-            return id;
-        }
 
-        function get_next() {
-            stack_pointer++;
-            info("get_next()");
-            if (stack_pointer == stack.length) {
-                push_top();
-            }
+            stack = stack.slice(0, stack_pointer+1); //delete upcoming history
+            stack.push(id);
+            stack_pointer = stack.length-1;
             return stack[stack_pointer];
         }
 
         function get_prev() {
             stack_pointer--;
+            /*TODO random*/
+            if (-1 >= stack_pointer) {
+                // javascript modulo
+                var new_ele = ((stack[0] - 1 % tracks.length) + tracks.length) % tracks.length;
 
-            if (-1 == stack_pointer) {
-                push_bottom();
-            }
+                stack = [new_ele].concat(stack);
+                stack_pointer = 0;
+            }// no else
             return stack[stack_pointer];
         }
+
+        /* +++ +++*/
 
         function create_text_div(text) {
             var node = document.createElement("div");
@@ -189,9 +212,9 @@
         }
 
         function change_volume(volume) {
-            document.getElementById('player').volume = volume;
-            document.getElementById('volume_label').innerHTML = volume;
-            document.getElementById('volume_slider').value = volume * 100;
+            document.getElementById('player').volume = volume / 100;
+            document.getElementById('volume_label').innerHTML = Math.round(volume);
+            document.getElementById('volume_slider').value = volume;
         }
 
         function get_files() {
@@ -209,15 +232,12 @@
 
                 if (player.canPlayType(file_type)) {
                     save_new_track(track_file, fileList);
-                }else{
-                    info("Can't play "+track_file.name);
+                } else {
+                    info("Can't play " + track_file.name);
                 }
             }
-
-            stack = [tracks.length - 1];
-            play_next_track();
-            change_volume(10 / 100);
-            // inital volume
+            play_id_track(0);
+            change_volume(10); // inital volume
         }
 
         function play_file(track) {
@@ -266,7 +286,7 @@
             var button = document.getElementById('option_button');
             button.innerHTML = "&#10536";
             button.setAttribute("onClick", "set_sorted();");
-            is_random = true;
+            play_random = true;
         }
 
         function set_sorted() {
@@ -274,19 +294,17 @@
             var button = document.getElementById('option_button');
             button.innerHTML = "&#8649";
             button.setAttribute("onClick", "set_random();");
-            is_random = false;
+            play_random = false;
         }
 
     </script>
 </head>
-
 <body>
-
 <div id="header">
     <div id="">
         <div>
             <video height="720" width="720" id="player" onended="play_next_track()" controls
-                   onvolumechange="change_volume(this.volume)">No support for html5.
+                   onvolumechange="change_volume(this.volume*100)">No support for html5.
             </video>
         </div>
         <div>
@@ -301,12 +319,12 @@
         </div>
 
 
-        <svg height="50" width="50">
+        <svg height="40" width="40">
             <polygon points="10,20 20,20 30,10 30,40 20,30 10,30"
                      style="fill:white;stroke:black;stroke-width:1px">
             </polygon>
         </svg>
-        <input type="range" name="firstname" id="volume_slider" value="1" onchange="change_volume(this.value / 100)">
+        <input type="range" name="firstname" id="volume_slider" value="1" onchange="change_volume(this.value)">
         <label id="volume_label"></label>
         <p></p>
         <br>
