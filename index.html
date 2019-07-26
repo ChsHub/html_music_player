@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <!--TODO The html/css layout of the top part can be improved. At the moment the top part is just fixed height. I wish it would adjust the height to the elements inside. Also the buttons, player, file input and volume slider don't really align with each other.
-    TODO When you jump to the next song, the track list(scroll) should focus on the next song.
     TODO Add a way to adjust the player size, when playing a video. Maybe something like a vertical slider.
 -->
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Player</title>
     <style type="text/css">
+        html {
+            font-size: 62.5%;
+            /*Reference for rem, Browser standard=16px -> 62.5% = 10px = 1rem*/
+        }
+
         body,
         div {
             margin: 0;
@@ -24,87 +28,96 @@
         }
 
         #filesToUpload {
-
             background-color: lightskyblue;
         }
 
-        #menu_opener:hover {
-
-            cursor: hand;
-        }
-
         #header {
-            /* Provide scrollbars if needed and fix the header dimensions */
             overflow: auto;
             position: absolute;
             width: 100%;
-            height: 500px;
+            height: 50rem;
         }
 
         #main {
-            /* Provide scrollbars if needed, position below header, and derive height from top/bottom */
             overflow: auto;
             position: absolute;
             width: 100%;
-            top: 500px;
+            top: 25rem;
             bottom: 0;
-            padding: 1px;
+            padding: 0;
+            margin: 0 auto;
         }
 
         .track {
             background-color: white;
+            font-size: 2rem;
         }
 
         .marked {
             background-color: lightskyblue;
+            font-size: 2rem;
         }
 
         .debug {
-            padding: 10px;
+            padding: 1rem;
             background-color: #fa87ce;
+            font-size: 2rem;
         }
 
         #player {
-            height: 20px;
+            height: 4rem;
             width: 90%;
-            padding: 40px;
             alignment: center;
         }
 
         #volume_slider {
-            width: 90%;
-        }
-
-        #controls {
-            margin: 10px;
-            padding: 1px;
-            alignment: center;
-
-        }
-
-        button {
-            /*padding-top: 0.3em;
-            padding-bottom: 0.3em;
-            line-height:1em;*/
-            width: 5.6em;
-            height: 1.6em;
-            /*height: 1.6em;line-height: 20px;*/
-            font-size: 40px;
-            padding-bottom: 0.35em;
-            /*line-height: 1em;*/
+            width: 80%;
             cursor: pointer;
         }
 
+        #volume_wrapper {
+            width: 100%;
+            padding-top: 0.1rem;
+        }
+
+        #volume_label {
+            text-align: right;
+            font-size: 2rem;
+        }
+
+        #controls {
+            margin-top: 1rem;
+            padding: 0;
+        }
+
+        button {
+            font-size: 4rem;
+            cursor: pointer;
+            width: 20rem;
+            height: 5rem;
+            display: inline-block;
+            text-align: center;
+            line-height: 5rem;
+        }
+
+        .track_button {
+
+        }
+
+        #start_stop_button {
+
+        }
+
         #option_button {
-            width: 1.6em;
-            padding-bottom: 0.45em;
+            width: 6rem;
+            height: 5rem;
             /*padding-left: 0.6em;
             padding-right: 0.6em;width: 6.6em;
-            width: 50px;*/
+            width: 5rem;*/
         }
 
         div, input {
-            padding: 10px;
+            padding: 1rem;
         }
     </style>
     <script type="text/javascript">
@@ -151,7 +164,7 @@
 
                     next_track = Math.floor(Math.random() * (tracks.length - tracks_played_count));
                     // iterate tracks
-                    // generate list of tracks not on stack, exit when counter maches random index (next_track)
+                    // generate list of tracks not on stack, exit when counter matches random index (next_track)
                     var not_stack_count = -1;
                     var track_count = -1;
                     var last_played = stack.slice(stack.length - tracks_played_count, stack.length);
@@ -175,9 +188,9 @@
 
         function set_next(id) {
 
-            stack = stack.slice(0, stack_pointer+1); //delete upcoming history
+            stack = stack.slice(0, stack_pointer + 1); //delete upcoming history
             stack.push(id);
-            stack_pointer = stack.length-1;
+            stack_pointer = stack.length - 1;
             return stack[stack_pointer];
         }
 
@@ -218,15 +231,20 @@
         }
 
         function get_files() {
-            init();
+
             var input_tracks = document.getElementById('filesToUpload');
             var fileList = document.getElementById('fileList');
             var player = document.getElementById('player');
+            if (input_tracks.files.length < 1) {
+                return;
+            }
+
+            init();
             // remove old elements
             while (fileList.hasChildNodes()) {
                 fileList.removeChild(fileList.lastChild);
             }
-
+            // add tracks if they can be played
             for (var track_file of input_tracks.files) {
                 var file_type = track_file.type;
 
@@ -240,17 +258,22 @@
             change_volume(10); // inital volume
         }
 
-        function play_file(track) {
+        function play_file(track_nr) {
 
+            // Unmark current track
             for (marked of document.getElementsByClassName("marked")) {
                 marked.className = "track";
             }
-            document.getElementsByClassName("track")[track].className = "marked";
+            // Mark next track, and adjust scroll bar
+            var current_track = document.getElementsByClassName("track")[track_nr];
+            current_track.className = "marked";
+            current_track.scrollIntoView();
 
-            var file_url = window.URL.createObjectURL(tracks[track]);
+            // Stop previous track and play current track
+            var file_url = window.URL.createObjectURL(tracks[track_nr]);
             stop();
             document.getElementById('player').src = file_url;
-            document.getElementById('player').height = "720";
+            //document.getElementById('player').height = "720"; TODO remove
             play();
         }
 
@@ -302,32 +325,35 @@
 <body>
 <div id="header">
     <div id="">
-        <div>
-            <video height="720" width="720" id="player" onended="play_next_track()" controls
-                   onvolumechange="change_volume(this.volume*100)">No support for html5.
-            </video>
+
+
+        <video height="720" width="720" id="player" onended="play_next_track()" controls
+               onvolumechange="change_volume(this.volume*100)">No support for html5.
+        </video>
+
+        <input type="file" name="filesToUpload" id="filesToUpload" multiple="" onchange="get_files();"/>
+
+        <div id="controls">
+            <button onclick="play_prev_track()" type="button" class="track_button">&#10703;</button>
+            <button id="start_stop_button" onclick="stop()" type="button">&#9655;</button>
+            <button onclick="play_next_track()" type="button" class="track_button">&#10704;</button>
+            <button onclick="set_random()" id="option_button">&#8649;</button>
         </div>
-        <div>
-            <input type="file" name="filesToUpload" id="filesToUpload" multiple="" onchange="get_files();"/>
 
-            <div id="controls">
-                <button onclick="play_prev_track()" type="button">&#10703;</button>
-                <button id="start_stop_button" onclick="stop()" type="button">&#9655;</button>
-                <button onclick="play_next_track()" type="button">&#10704;</button>
-                <button onclick="set_random()" id="option_button">&#8649;</button>
-            </div>
+
+        <div>
+            <svg height="40" width="40">
+                <polygon points="10,20 20,20 30,10 30,40 20,30 10,30"
+                         style="fill:white;stroke:black;stroke-width:1px">
+                </polygon>
+            </svg>
+            <div id="volume_wrapper"><input type="range" name="firstname" id="volume_slider" value="1"
+                                            onchange="change_volume(this.value)"></div>
+            <label id="volume_label"></label>
+            <p></p>
+            <br>
         </div>
 
-
-        <svg height="40" width="40">
-            <polygon points="10,20 20,20 30,10 30,40 20,30 10,30"
-                     style="fill:white;stroke:black;stroke-width:1px">
-            </polygon>
-        </svg>
-        <input type="range" name="firstname" id="volume_slider" value="1" onchange="change_volume(this.value)">
-        <label id="volume_label"></label>
-        <p></p>
-        <br>
     </div>
 
 </div>
@@ -336,7 +362,7 @@
     <div id="fileList"></div>
 
     <ol id="messages"></ol>
-    <div id="texttest"></div>
+    <div id="texttest"></div> <!--TODO REMOVE DEBUG MESSAGES-->
 </div>
 </body>
 </html>
