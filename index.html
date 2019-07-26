@@ -154,11 +154,12 @@ https://developer.mozilla.org/en-US/docs/Web/CSS/display?source=post_page-------
                ontimeupdate="update_time(this.currentTime)">No support for html5.
         </video>
         <div class="controls">
+            <label for="hidden_slider" hidden></label>
             <span>
-                <label for="hidden_slider"></label><input type="range" id="hidden_slider" value="0" onclick="set_time(this.value)"/>
+                <input type="range" id="hidden_slider" value="0" onclick="set_time(this.value)"/>
                 <input type="range" id="player_slider" value="0"/>
             </span>
-            <label id="label_time" for="player_slider">0</label> / <label id="label_duration">0</label>
+            <label id="label_time" for="player_slider"> </label> / <label id="label_duration"> </label>
         </div>
 
 
@@ -166,7 +167,7 @@ https://developer.mozilla.org/en-US/docs/Web/CSS/display?source=post_page-------
             <input type="file" id="filesToUpload" multiple onchange="get_files();" hidden/>
             <button onclick="document.getElementById('filesToUpload').click();">&#128194;</button>
             <button onclick="play_file(get_prev())" type="button" class="track_button">&#10703;</button>
-            <button id="start_stop_button" onclick="stop()" type="button">&#9655;</button>
+            <button id="start_stop_button" onclick="toggle_play()" type="button">&#9655;</button>
             <button onclick="play_next_track()" type="button" class="track_button">&#10704;</button>
             <button onclick="toggle_random(this)" id="option_button">&#8649;</button>
         </div>
@@ -349,27 +350,23 @@ https://developer.mozilla.org/en-US/docs/Web/CSS/display?source=post_page-------
 
         // Stop previous track and play current track
         document.getElementById('player').src = window.URL.createObjectURL(tracks[track_nr]);
-        //document.getElementById('player').height = "720"; TODO remove
-        play();
+        toggle_play();
     }
 
-    function stop() {
-        document.getElementById('player').pause();
-
-        var button = document.getElementById('start_stop_button');
-        button.setAttribute("onClick", "play();");
-        button.innerHTML = "&#9655;";
-    }
-
-    function play() {
+    function toggle_play() {
         /**
-         * Start player and toggle the play button
+         * Start/stop the player and set the corresponding button text
          * */
-        document.getElementById('player').play();
-
+        var player = document.getElementById('player');
         var button = document.getElementById('start_stop_button');
-        button.setAttribute("onClick", "stop();");
-        button.innerHTML = "&#10072; &#10072;";
+
+        if (player.paused) {
+            player.play();
+            button.innerHTML = "&#10072; &#10072;";
+        } else {
+            player.pause();
+            button.innerHTML = "&#9655;";
+        }
     }
 
     function play_next_track() {
