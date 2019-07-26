@@ -3,6 +3,9 @@
 <!--TODO The html/css layout of the top part can be improved. At the moment the top part is just fixed height. I wish it would adjust the height to the elements inside. Also the buttons, player, file input and volume slider don't really align with each other.
     TODO Add a way to adjust the player size, when playing a video. Maybe something like a vertical slider.
 -->
+<!--https://medium.com/@DaphneWatson/css-display-properties-block-inline-and-inline-block-how-to-tell-the-difference-7d3a1e6e3051
+https://developer.mozilla.org/en-US/docs/Web/CSS/display?source=post_page---------------------------
+-->
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <title>Player</title>
@@ -12,7 +15,10 @@
             /*Reference for rem, Browser standard=16px -> 62.5% = 10px = 1rem*/
         }
 
-        body,
+        body {
+            font-size: 2rem;
+        }
+
         div {
             margin: 0;
             padding: 0;
@@ -50,18 +56,18 @@
 
         .track {
             background-color: white;
-            font-size: 2rem;
+
         }
 
         .marked {
             background-color: lightskyblue;
-            font-size: 2rem;
+
         }
 
         .debug {
             padding: 1rem;
             background-color: #fa87ce;
-            font-size: 2rem;
+
         }
 
         #player {
@@ -70,22 +76,36 @@
             alignment: center;
         }
 
-        #volume_slider {
+        #player_slider {
+            width: 80%;
+        }
+
+        #hidden_slider {
+            position: absolute;
             width: 80%;
             cursor: pointer;
+            opacity: 0;
+            z-index: 2;
+            /*https://www.freecodecamp.org/news/z-index-explained-how-to-stack-elements-using-css-7c5aa0f179b3/*/
         }
 
         #volume_wrapper {
+            display: flow-root;
             width: 100%;
             padding-top: 0.1rem;
         }
 
-        #volume_label {
-            text-align: right;
-            font-size: 2rem;
+        #volume_slider {
+            width: 70%;
+            cursor: pointer;
         }
 
-        #controls {
+        label {
+            text-align: right;
+        }
+
+        .controls {
+            display: flow-root;
             margin-top: 1rem;
             padding: 0;
         }
@@ -100,6 +120,11 @@
             line-height: 5rem;
         }
 
+        button:hover {
+            background-color: lightskyblue;
+            border-color: lightslategray;
+        }
+
         .track_button {
 
         }
@@ -111,247 +136,50 @@
         #option_button {
             width: 6rem;
             height: 5rem;
-            /*padding-left: 0.6em;
-            padding-right: 0.6em;width: 6.6em;
-            width: 5rem;*/
         }
 
         div, input {
             padding: 1rem;
         }
     </style>
-    <script type="text/javascript">
-        // https://jsbin.com/moyiro/4/edit?html,css,output
-        // debugging
-        var debugging = true;
 
-        function info(text) {
-            if (debugging) {
-                var messages = document.getElementById('messages');
-                var node = document.createElement("LI");                 // Create a <li> node
-                node.appendChild(document.createTextNode(text));
-                messages.appendChild(node);
-                node.className = 'debug';
-            }//no else
-        }
-
-        // Todo use OOP
-        // Todo fit to screen size
-        var tracks = [];
-        var stack = [];
-        var stack_pointer = 0;
-        var loop_tracklist = true;
-        var play_random = false;
-
-        function init() {
-            tracks = [];
-            stack = [];
-            stack_pointer = 0;
-            loop_tracklist = false;
-        }
-
-        /* +++ Stack +++*/
-
-        //  get next track from stack
-        //  or if at stack end: increment or random track
-        function get_next() {
-            stack_pointer++;
-            if (stack_pointer >= stack.length) {
-
-                var next_track = 0;
-                if (play_random) {
-                    var tracks_played_count = stack.length % tracks.length;
-
-                    next_track = Math.floor(Math.random() * (tracks.length - tracks_played_count));
-                    // iterate tracks
-                    // generate list of tracks not on stack, exit when counter matches random index (next_track)
-                    var not_stack_count = -1;
-                    var track_count = -1;
-                    var last_played = stack.slice(stack.length - tracks_played_count, stack.length);
-                    while (not_stack_count < next_track) {
-                        track_count++;
-                        if (last_played.indexOf(track_count) <= -1) {
-                            not_stack_count++;
-                        }//no else
-                    }
-                    next_track = track_count;
-                } else {
-                    next_track = stack[stack_pointer - 1] + 1; // top stack track +1
-                    next_track %= tracks.length; // start playlist from zero
-                }
-                info("PUSH NEW ELE " + next_track);
-                stack.push(next_track);
-            }//no else
-
-            return stack[stack_pointer];
-        }
-
-        function set_next(id) {
-
-            stack = stack.slice(0, stack_pointer + 1); //delete upcoming history
-            stack.push(id);
-            stack_pointer = stack.length - 1;
-            return stack[stack_pointer];
-        }
-
-        function get_prev() {
-            stack_pointer--;
-            /*TODO random*/
-            if (-1 >= stack_pointer) {
-                // javascript modulo
-                var new_ele = ((stack[0] - 1 % tracks.length) + tracks.length) % tracks.length;
-
-                stack = [new_ele].concat(stack);
-                stack_pointer = 0;
-            }// no else
-            return stack[stack_pointer];
-        }
-
-        /* +++ +++*/
-
-        function create_text_div(text) {
-            var node = document.createElement("div");
-            node.appendChild(document.createTextNode(text));
-            return node;
-        }
-
-        function save_new_track(file, fileList) {
-
-            var node = create_text_div(file.name);
-            node.className = "track";
-            node.setAttribute("onClick", "play_id_track(" + tracks.length + ");");
-            fileList.appendChild(node);
-            tracks.push(file);
-        }
-
-        function change_volume(volume) {
-            document.getElementById('player').volume = volume / 100;
-            document.getElementById('volume_label').innerHTML = Math.round(volume);
-            document.getElementById('volume_slider').value = volume;
-        }
-
-        function get_files() {
-
-            var input_tracks = document.getElementById('filesToUpload');
-            var fileList = document.getElementById('fileList');
-            var player = document.getElementById('player');
-            if (input_tracks.files.length < 1) {
-                return;
-            }
-
-            init();
-            // remove old elements
-            while (fileList.hasChildNodes()) {
-                fileList.removeChild(fileList.lastChild);
-            }
-            // add tracks if they can be played
-            for (var track_file of input_tracks.files) {
-                var file_type = track_file.type;
-
-                if (player.canPlayType(file_type)) {
-                    save_new_track(track_file, fileList);
-                } else {
-                    info("Can't play " + track_file.name);
-                }
-            }
-            play_id_track(0);
-            change_volume(10); // inital volume
-        }
-
-        function play_file(track_nr) {
-
-            // Unmark current track
-            for (marked of document.getElementsByClassName("marked")) {
-                marked.className = "track";
-            }
-            // Mark next track, and adjust scroll bar
-            var current_track = document.getElementsByClassName("track")[track_nr];
-            current_track.className = "marked";
-            current_track.scrollIntoView();
-
-            // Stop previous track and play current track
-            var file_url = window.URL.createObjectURL(tracks[track_nr]);
-            stop();
-            document.getElementById('player').src = file_url;
-            //document.getElementById('player').height = "720"; TODO remove
-            play();
-        }
-
-        function stop() {
-            document.getElementById('player').pause();
-
-            var button = document.getElementById('start_stop_button');
-            button.setAttribute("onClick", "play();");
-            button.innerHTML = "&#9655;";
-        }
-
-        function play() {
-            document.getElementById('player').play();
-
-            var button = document.getElementById('start_stop_button');
-            button.setAttribute("onClick", "stop();");
-            button.innerHTML = "&#10072; &#10072;";
-        }
-
-        function play_next_track() {
-            play_file(get_next())
-        }
-
-        function play_prev_track() {
-            play_file(get_prev())
-        }
-
-        function play_id_track(id) {
-            play_file(set_next(id))
-        }
-
-        function set_random() {
-            var button = document.getElementById('option_button');
-            button.innerHTML = "&#10536";
-            button.setAttribute("onClick", "set_sorted();");
-            play_random = true;
-        }
-
-        function set_sorted() {
-
-            var button = document.getElementById('option_button');
-            button.innerHTML = "&#8649";
-            button.setAttribute("onClick", "set_random();");
-            play_random = false;
-        }
-
-    </script>
 </head>
 <body>
 <div id="header">
     <div id="">
 
-
-        <video height="720" width="720" id="player" onended="play_next_track()" controls
-               onvolumechange="change_volume(this.volume*100)">No support for html5.
+        <video height="720" width="720" id="player"
+               ondurationchange="update_duration(this.duration)"
+               onended="play_next_track()"
+               ontimeupdate="update_time(this.currentTime)">No support for html5.
         </video>
-
-        <input type="file" name="filesToUpload" id="filesToUpload" multiple="" onchange="get_files();"/>
-
-        <div id="controls">
-            <button onclick="play_prev_track()" type="button" class="track_button">&#10703;</button>
-            <button id="start_stop_button" onclick="stop()" type="button">&#9655;</button>
-            <button onclick="play_next_track()" type="button" class="track_button">&#10704;</button>
-            <button onclick="set_random()" id="option_button">&#8649;</button>
+        <div class="controls">
+            <span>
+                <label for="hidden_slider"></label><input type="range" id="hidden_slider" value="0" onclick="set_time(this.value)"/>
+                <input type="range" id="player_slider" value="0"/>
+            </span>
+            <label id="label_time" for="player_slider">0</label> / <label id="label_duration">0</label>
         </div>
 
 
-        <div>
+        <div class="controls">
+            <input type="file" id="filesToUpload" multiple onchange="get_files();" hidden/>
+            <button onclick="document.getElementById('filesToUpload').click();">&#128194;</button>
+            <button onclick="play_file(get_prev())" type="button" class="track_button">&#10703;</button>
+            <button id="start_stop_button" onclick="stop()" type="button">&#9655;</button>
+            <button onclick="play_next_track()" type="button" class="track_button">&#10704;</button>
+            <button onclick="toggle_random(this)" id="option_button">&#8649;</button>
+        </div>
+
+        <br>
+        <div id="volume_wrapper">
             <svg height="40" width="40">
                 <polygon points="10,20 20,20 30,10 30,40 20,30 10,30"
                          style="fill:white;stroke:black;stroke-width:1px">
                 </polygon>
             </svg>
-            <div id="volume_wrapper"><input type="range" name="firstname" id="volume_slider" value="1"
-                                            onchange="change_volume(this.value)"></div>
-            <label id="volume_label"></label>
-            <p></p>
-            <br>
+            <input type="range" id="volume_slider" value="0" onchange="change_volume(this.value)"/>
+            <label id="volume_label" for="volume_slider">0</label>
         </div>
 
     </div>
@@ -365,4 +193,225 @@
     <div id="texttest"></div> <!--TODO REMOVE DEBUG MESSAGES-->
 </div>
 </body>
+<script type="text/javascript">
+    // https://jsbin.com/moyiro/4/edit?html,css,output
+    // debugging
+    var debugging = true;
+
+    function info(text) {
+        if (debugging) {
+            var messages = document.getElementById('messages');
+            var node = document.createElement("LI");                 // Create a <li> node
+            node.appendChild(document.createTextNode(text));
+            messages.appendChild(node);
+            node.className = 'debug';
+        }//no else
+    }
+
+    // Todo use OOP?
+    var tracks = [];
+    var stack = [];
+    var stack_pointer = 0;
+    var loop_tracklist = true;
+    var play_random = false;
+
+    /* +++ Stack +++*/
+
+    function get_next() {
+        /**
+         * Get next track from stack
+         * or if at stack end: increment or random track
+         */
+        stack_pointer++;
+        if (stack_pointer >= stack.length) {
+
+            var next_track = 0;
+            if (play_random) {
+                var tracks_played_count = stack.length % tracks.length;
+
+                next_track = Math.floor(Math.random() * (tracks.length - tracks_played_count));
+                // iterate tracks
+                // generate list of tracks not on stack, exit when counter matches random index (next_track)
+                var not_stack_count = -1;
+                var track_count = -1;
+                var last_played = stack.slice(stack.length - tracks_played_count, stack.length);
+                while (not_stack_count < next_track) {
+                    track_count++;
+                    if (last_played.indexOf(track_count) <= -1) {
+                        not_stack_count++;
+                    }//no else
+                }
+                next_track = track_count;
+            } else {
+                next_track = stack[stack_pointer - 1] + 1; // top stack track +1
+                next_track %= tracks.length; // start playlist from zero
+            }
+            info("PUSH NEW ELE " + next_track);
+            stack.push(next_track);
+        }//no else
+
+        return stack[stack_pointer];
+    }
+
+    function set_next(id) {
+
+        stack = stack.slice(0, stack_pointer + 1); //delete upcoming history
+        stack.push(id);
+        stack_pointer = stack.length - 1;
+        return stack[stack_pointer];
+    }
+
+    function get_prev() {
+        stack_pointer--;
+        /*TODO random*/
+        if (-1 >= stack_pointer) {
+            // javascript modulo
+            var new_ele = ((stack[0] - 1 % tracks.length) + tracks.length) % tracks.length;
+
+            stack = [new_ele].concat(stack);
+            stack_pointer = 0;
+        }// no else
+        return stack[stack_pointer];
+    }
+
+    /* +++ +++*/
+
+    function secondsToMinutes(seconds) {
+        /*https://stackoverflow.com/a/54997236/7062162*/
+        return Math.floor(seconds / 60) + ':' + ('0' + Math.floor(seconds % 60)).slice(-2);
+    }
+
+    function create_text_div(text) {
+        var node = document.createElement("div");
+        node.appendChild(document.createTextNode(text));
+        return node;
+    }
+
+    function save_new_track(file, fileList) {
+
+        var node = create_text_div(file.name);
+        node.className = "track";
+        node.setAttribute("onClick", "play_id_track(" + tracks.length + ");");
+        fileList.appendChild(node);
+        tracks.push(file);
+    }
+
+    function change_volume(volume) {
+        document.getElementById('player').volume = volume / 100;
+        document.getElementById('volume_label').innerHTML = Math.round(volume);
+        document.getElementById('volume_slider').value = volume;
+    }
+
+    function get_files() {
+
+        var input_tracks = document.getElementById('filesToUpload');
+        var fileList = document.getElementById('fileList');
+        var player = document.getElementById('player');
+
+        if (input_tracks.files.length < 1) {
+            return;
+        }
+        // Reset the stack
+        tracks = [];
+        stack = [];
+        stack_pointer = 0;
+        loop_tracklist = false;
+
+        // Remove old elements
+        while (fileList.hasChildNodes()) {
+            fileList.removeChild(fileList.lastChild);
+        }
+        // Add tracks if they can be played
+        for (var track_file of input_tracks.files) {
+            var file_type = track_file.type;
+
+            if (player.canPlayType(file_type)) {
+                save_new_track(track_file, fileList);
+            } else {
+                info("Can't play " + track_file.name);
+            }
+        }
+        play_id_track(0);
+        change_volume(10); // Initial volume
+    }
+
+    function play_file(track_nr) {
+
+        // Unmark current track
+        for (var marked of document.getElementsByClassName("marked")) {
+            marked.className = "track";
+        }
+
+        // Mark next track, and adjust scroll bar
+        var current_track = document.getElementsByClassName("track")[track_nr];
+        current_track.className = "marked";
+        current_track.scrollIntoView();
+
+        // Stop previous track and play current track
+        document.getElementById('player').src = window.URL.createObjectURL(tracks[track_nr]);
+        //document.getElementById('player').height = "720"; TODO remove
+        play();
+    }
+
+    function stop() {
+        document.getElementById('player').pause();
+
+        var button = document.getElementById('start_stop_button');
+        button.setAttribute("onClick", "play();");
+        button.innerHTML = "&#9655;";
+    }
+
+    function play() {
+        /**
+         * Start player and toggle the play button
+         * */
+        document.getElementById('player').play();
+
+        var button = document.getElementById('start_stop_button');
+        button.setAttribute("onClick", "stop();");
+        button.innerHTML = "&#10072; &#10072;";
+    }
+
+    function play_next_track() {
+        play_file(get_next())
+    }
+
+    function play_id_track(id) {
+        play_file(set_next(id))
+    }
+
+    function toggle_random(button) {
+        /**
+         * Toggle random mode
+         */
+        play_random = !play_random;
+        if (play_random) {
+            button.innerHTML = "&#10536";
+        } else {
+            button.innerHTML = "&#8649";
+        }
+    }
+
+    var PLAYER_SLIDER_MAX = 1000;
+    document.getElementById("player_slider").max = PLAYER_SLIDER_MAX;
+    document.getElementById("hidden_slider").max = PLAYER_SLIDER_MAX;
+
+    function update_time(time) {
+        var duration = document.getElementById("player").duration;
+        // The currentTime property returns the current position of the audio/video playback
+        document.getElementById("player_slider").value = PLAYER_SLIDER_MAX * time / duration;
+        document.getElementById('label_time').innerText = secondsToMinutes(time);
+
+    }
+
+    function update_duration(duration) {
+        document.getElementById('label_duration').innerText = secondsToMinutes(duration);
+    }
+
+
+    function set_time(value) {
+        var player = document.getElementById("player");
+        player.currentTime = player.duration * value / PLAYER_SLIDER_MAX;
+    }
+</script>
 </html>
