@@ -82,10 +82,10 @@ https://developer.mozilla.org/en-US/docs/Web/CSS/display?source=post_page-------
 
         #hidden_slider {
             position: absolute;
-            width: 80%;
+            width: 100%;
             cursor: pointer;
             opacity: 0;
-            z-index: 2;
+            z-index: 110;
             /*https://www.freecodecamp.org/news/z-index-explained-how-to-stack-elements-using-css-7c5aa0f179b3/*/
         }
 
@@ -108,6 +108,7 @@ https://developer.mozilla.org/en-US/docs/Web/CSS/display?source=post_page-------
             display: flow-root;
             margin-top: 1rem;
             padding: 0;
+            width: 90%;
         }
 
         button {
@@ -141,24 +142,62 @@ https://developer.mozilla.org/en-US/docs/Web/CSS/display?source=post_page-------
         div, input {
             padding: 1rem;
         }
-    </style>
 
+        .shadow {
+            left: 0;
+            width: 1px;
+            height: 2rem;
+            background-color: lightskyblue;
+            position: absolute;
+            opacity: 0.25;
+        }
+
+        #progress_wrapper {
+            left: 0;
+            position: relative;
+            height: 2rem;
+            border-style: solid;
+            border-width: 1px;
+            border-color: lightslategray;
+            width: 80%;
+            display: inline-block;
+        }
+
+    </style>
+    <!--            border-right-width: 1px;
+            border-right-style: solid;
+            border-right-color: rgb(212, 238, 253);-->
 </head>
 <body>
 <div id="header">
     <div id="">
 
-        <video height="720" width="720" id="player"
+        <video id="player"
                ondurationchange="update_duration(this.duration)"
                onended="play_next_track()"
                ontimeupdate="update_time(this.currentTime)">No support for html5.
         </video>
         <div class="controls">
-            <label for="hidden_slider" hidden></label>
-            <span>
-                <input type="range" id="hidden_slider" value="0" onclick="set_time(this.value)"/>
-                <input type="range" id="player_slider" value="0"/>
-            </span>
+            <label for="hidden_slider"></label>
+                <span id="progress_wrapper">
+                    <!--Hidden slider prevents race condition for user input value-->
+                    <input type="range" id="hidden_slider" value="0" max="1000" onclick="set_time(this.value/1000)"/>
+                    <span class="shadow" style="z-index: 0;"></span>
+                    <span class="shadow" style="z-index: 1;"></span>
+                    <span class="shadow" style="z-index: 2;"></span>
+                    <span class="shadow" style="z-index: 3;"></span>
+                    <span class="shadow" style="z-index: 4;"></span>
+                    <span class="shadow" style="z-index: 5;"></span>
+                    <span class="shadow" style="z-index: 6;"></span>
+                    <span class="shadow" style="z-index: 7;"></span>
+                    <span class="shadow" style="z-index: 8;"></span>
+                    <span class="shadow" style="z-index: 9;"></span>
+                    <span class="shadow" style="z-index: 10;"></span>
+                    <span class="shadow" style="z-index: 11;"></span>
+                    <span class="shadow" style="z-index: 12;"></span>
+                    <span class="shadow" style="z-index: 13;"></span>
+                </span>
+                <!--progress id="player_slider" value="0"></progress-->
             <label id="label_time" for="player_slider"> </label> / <label id="label_duration"> </label>
         </div>
 
@@ -231,8 +270,8 @@ https://developer.mozilla.org/en-US/docs/Web/CSS/display?source=post_page-------
                 var tracks_played_count = stack.length % tracks.length;
 
                 next_track = Math.floor(Math.random() * (tracks.length - tracks_played_count));
-                // iterate tracks
-                // generate list of tracks not on stack, exit when counter matches random index (next_track)
+                // Iterate tracks
+                // Generate list of tracks not on stack, exit when counter matches random index (next_track)
                 var not_stack_count = -1;
                 var track_count = -1;
                 var last_played = stack.slice(stack.length - tracks_played_count, stack.length);
@@ -389,26 +428,51 @@ https://developer.mozilla.org/en-US/docs/Web/CSS/display?source=post_page-------
         }
     }
 
-    var PLAYER_SLIDER_MAX = 1000;
-    document.getElementById("player_slider").max = PLAYER_SLIDER_MAX;
-    document.getElementById("hidden_slider").max = PLAYER_SLIDER_MAX;
+    var PLAYER_SLIDER_MAX;
+    var progress_id;
+    var pos;
 
     function update_time(time) {
         var duration = document.getElementById("player").duration;
-        // The currentTime property returns the current position of the audio/video playback
-        document.getElementById("player_slider").value = PLAYER_SLIDER_MAX * time / duration;
+        // document.getElementById("player_slider").value = PLAYER_SLIDER_MAX * time / duration;
         document.getElementById('label_time').innerText = secondsToMinutes(time);
-
     }
-
-    function update_duration(duration) {
-        document.getElementById('label_duration').innerText = secondsToMinutes(duration);
-    }
-
 
     function set_time(value) {
         var player = document.getElementById("player");
-        player.currentTime = player.duration * value / PLAYER_SLIDER_MAX;
+        player.currentTime = player.duration * value;
+        pos = PLAYER_SLIDER_MAX * value;
     }
+
+    function update_duration(duration) {
+        // Set duration label
+        document.getElementById('label_duration').innerText = secondsToMinutes(duration);
+        // ANIMATION
+        var frame_delay = 20; // 50 fps
+        var maximum = 100;
+
+        PLAYER_SLIDER_MAX = Math.floor(duration * 1000 / frame_delay);
+
+        clearInterval(progress_id);
+        progress_id = setInterval(frame, frame_delay); // in milliseconds
+        pos = 0;
+
+        function frame() {
+            /* test for finished */
+            if (pos >= PLAYER_SLIDER_MAX) {
+                clearInterval(progress_id);
+            } else {
+                /* code to change the element style */
+                pos += 1;
+
+                // Shadows are shown a few frames ahead
+                for (var shadow of document.getElementsByClassName('shadow')) {
+                    shadow.style.width = (pos + shadow.style.zIndex * 20) * maximum / PLAYER_SLIDER_MAX + "%";
+                    shadow.style.width = shadow.style.width - shadow.style.width % maximum;
+                }
+            }
+        }
+    }
+
 </script>
 </html>
