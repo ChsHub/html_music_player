@@ -2,11 +2,11 @@
 <html lang="en">
 <!--TODO The html/css layout of the top part can be improved. At the moment the top part is just fixed height.
 I wish it would adjust the height to the elements inside.
-Also the buttons, player, file input and volume slider don't really align with each other.
     TODO Add a way to adjust the player size, when playing a video. Maybe something like a vertical slider.
 -->
 <!--https://medium.com/@DaphneWatson/css-display-properties-block-inline-and-inline-block-how-to-tell-the-difference-7d3a1e6e3051
-https://developer.mozilla.org/en-US/docs/Web/CSS/display?source=post_page---------------------------
+https://developer.mozilla.org/en-US/docs/Web/CSS/display?source=post_page
+https://thoughtbot.com/blog/positioning---------------------------
 -->
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -19,14 +19,6 @@ https://developer.mozilla.org/en-US/docs/Web/CSS/display?source=post_page-------
 
         body {
             font-size: 2rem;
-        }
-
-        div {
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
             /* Disable scrollbars and ensure that the body fills the window */
             overflow: hidden;
             width: 100%;
@@ -35,29 +27,39 @@ https://developer.mozilla.org/en-US/docs/Web/CSS/display?source=post_page-------
             padding: 0;
         }
 
+        div {
+            margin: 0;
+            padding: 0;
+        }
+
         #header {
             overflow: hidden;
             position: fixed;
+            top: 0;
             width: 100%;
+            left: 0;
             height: 22rem;
+            padding: 0;
+            margin: 0 auto;
         }
 
         #song_list {
             overflow: auto;
             position: absolute;
             width: 100%;
-            top: 22rem;
+            top: 23rem;
             bottom: 0;
             padding: 0;
             margin: 0 auto;
         }
 
-
         .track {
+            padding: 1rem;
             background-color: white;
         }
 
         .marked {
+            padding: 1rem;
             background-color: lightskyblue;
         }
 
@@ -88,8 +90,6 @@ https://developer.mozilla.org/en-US/docs/Web/CSS/display?source=post_page-------
             position: absolute;
             top: 0;
             width: 76%;
-            left: 50%;
-            margin-left: -38%;
             cursor: pointer;
             opacity: 0;
             z-index: 2;
@@ -100,8 +100,6 @@ https://developer.mozilla.org/en-US/docs/Web/CSS/display?source=post_page-------
             position: absolute;
             top: 0;
             width: 76%;
-            left: 50%;
-            margin-left: -38%;
             background-color: lightskyblue;
             opacity: 1;
         }
@@ -114,12 +112,14 @@ https://developer.mozilla.org/en-US/docs/Web/CSS/display?source=post_page-------
         label {
             text-align: right;
         }
-
+        /*https://thoughtbot.com/blog/positioning*/
         .controls {
-            display: flow-root;
-            margin-top: 1rem;
-            padding: 0;
-            width: 90%;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            width: 100%;
+            background-color: lightskyblue;
+            padding-top: 1rem;
         }
 
         button {
@@ -141,7 +141,7 @@ https://developer.mozilla.org/en-US/docs/Web/CSS/display?source=post_page-------
             width: 10%;
         }
 
-        div, input {
+        input {
             padding: 1rem;
         }
 
@@ -417,9 +417,7 @@ https://developer.mozilla.org/en-US/docs/Web/CSS/display?source=post_page-------
                ondragexit="handle_file_select(this)" ondrop="handle_file_select(this)">
 </span>
 <div id="header">
-
     <div>
-
         <video id="player"
                ondurationchange="update_duration(this.duration)"
                onended="play_next_track()"

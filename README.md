@@ -1,2 +1,2 @@
-# html_music_player
-Simple player for playing music inside your browser.
+# html music player
+Simple player for music and video inside your browser.
