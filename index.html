@@ -7,6 +7,7 @@ I wish it would adjust the height to the elements inside.
 <!--https://medium.com/@DaphneWatson/css-display-properties-block-inline-and-inline-block-how-to-tell-the-difference-7d3a1e6e3051
 https://developer.mozilla.org/en-US/docs/Web/CSS/display?source=post_page
 https://thoughtbot.com/blog/positioning---------------------------
+https://jsbin.com/moyiro/4/edit?html,css,output
 -->
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
@@ -61,11 +62,6 @@ https://thoughtbot.com/blog/positioning---------------------------
         .marked {
             padding: 1rem;
             background-color: lightskyblue;
-        }
-
-        .debug {
-            padding: 1rem;
-            background-color: #fa87ce;
         }
 
         #player {
@@ -164,21 +160,6 @@ https://thoughtbot.com/blog/positioning---------------------------
 
     </style>
     <script type="text/javascript">
-        // https://jsbin.com/moyiro/4/edit?html,css,output
-        // debugging
-        var debugging = true;
-
-        function info(text) {
-            if (debugging) {
-                var messages = document.getElementById('messages');
-                var node = document.createElement("LI");                 // Create a <li> node
-                node.appendChild(document.createTextNode(text));
-                messages.appendChild(node);
-                node.className = 'debug';
-            }//no else
-        }
-
-        // Todo use OOP?
         var tracks = [];
         var stack = [];
         var stack_pointer = 0;
@@ -216,7 +197,7 @@ https://thoughtbot.com/blog/positioning---------------------------
                     next_track = stack[stack_pointer - 1] + 1; // top stack track +1
                     next_track %= tracks.length; // start playlist from zero
                 }
-                info("PUSH NEW ELE " + next_track);
+                console.log("PUSH NEW ELE " + next_track);
                 stack.push(next_track);
             }//no else
 
@@ -304,7 +285,7 @@ https://thoughtbot.com/blog/positioning---------------------------
                 if (player.canPlayType(file_type)) {
                     save_new_track(track_file, fileList);
                 } else {
-                    info("Can't play " + track_file.name);
+                    console.log("Can't play " + track_file.name);
                 }
             }
             play_id_track(0);
@@ -462,8 +443,6 @@ https://thoughtbot.com/blog/positioning---------------------------
 
     <div id="fileList"></div>
 
-    <ol id="messages"></ol>
-    <div id="texttest"></div> <!--TODO REMOVE DEBUG MESSAGES-->
 </div>
 </body>
 
