@@ -44,7 +44,7 @@ https://jsbin.com/moyiro/4/edit?html,css,output
             margin: 0 auto;
         }
 
-        #song_list {
+        #fileList {
             overflow: auto;
             position: absolute;
             width: 100%;
@@ -108,6 +108,7 @@ https://jsbin.com/moyiro/4/edit?html,css,output
         label {
             text-align: right;
         }
+
         /*https://thoughtbot.com/blog/positioning*/
         .controls {
             display: flex;
@@ -168,7 +169,8 @@ https://jsbin.com/moyiro/4/edit?html,css,output
 
         /* +++ Stack +++*/
 
-        function get_next() {
+        function get_next()
+        {
             /**
              * Get next track from stack
              * or if at stack end: increment or random track
@@ -204,7 +206,8 @@ https://jsbin.com/moyiro/4/edit?html,css,output
             return stack[stack_pointer];
         }
 
-        function set_next(id) {
+        function set_next(id)
+        {
 
             stack = stack.slice(0, stack_pointer + 1); //delete upcoming history
             stack.push(id);
@@ -212,7 +215,8 @@ https://jsbin.com/moyiro/4/edit?html,css,output
             return stack[stack_pointer];
         }
 
-        function get_prev() {
+        function get_prev()
+        {
             stack_pointer--;
             /*TODO random*/
             if (-1 >= stack_pointer) {
@@ -227,18 +231,21 @@ https://jsbin.com/moyiro/4/edit?html,css,output
 
         /* +++ +++*/
 
-        function secondsToMinutes(seconds) {
+        function secondsToMinutes(seconds)
+        {
             /*https://stackoverflow.com/a/54997236/7062162*/
             return Math.floor(seconds / 60) + ':' + ('0' + Math.floor(seconds % 60)).slice(-2);
         }
 
-        function create_text_div(text) {
+        function create_text_div(text)
+        {
             var node = document.createElement("div");
             node.appendChild(document.createTextNode(text));
             return node;
         }
 
-        function save_new_track(file, fileList) {
+        function save_new_track(file, fileList)
+        {
 
             var node = create_text_div(file.name);
             node.className = "track";
@@ -247,19 +254,22 @@ https://jsbin.com/moyiro/4/edit?html,css,output
             tracks.push(file);
         }
 
-        function change_volume(volume) {
+        function change_volume(volume)
+        {
             document.getElementById('player').volume = volume / 100;
             document.getElementById('volume_label').innerHTML = Math.round(volume);
             document.getElementById('volume_slider').value = volume;
         }
 
-        function get_files() {
+        function get_files()
+        {
 
             var input_tracks = document.getElementById('filesToUpload');
             open_files(input_tracks.files);
         }
 
-        function open_files(input_tracks) {
+        function open_files(input_tracks)
+        {
 
 
             var fileList = document.getElementById('fileList');
@@ -292,7 +302,8 @@ https://jsbin.com/moyiro/4/edit?html,css,output
             change_volume(10); // Initial volume
         }
 
-        function play_file(track_nr) {
+        function play_file(track_nr)
+        {
 
             // Unmark current track
             for (var marked of document.getElementsByClassName("marked")) {
@@ -309,7 +320,8 @@ https://jsbin.com/moyiro/4/edit?html,css,output
             toggle_play();
         }
 
-        function toggle_play() {
+        function toggle_play()
+        {
             /**
              * Start/stop the player and set the corresponding button text
              * */
@@ -327,15 +339,18 @@ https://jsbin.com/moyiro/4/edit?html,css,output
             }
         }
 
-        function play_next_track() {
+        function play_next_track()
+        {
             play_file(get_next())
         }
 
-        function play_id_track(id) {
+        function play_id_track(id)
+        {
             play_file(set_next(id))
         }
 
-        function toggle_random(button) {
+        function toggle_random(button)
+        {
             /**
              * Toggle random mode
              */
@@ -351,17 +366,20 @@ https://jsbin.com/moyiro/4/edit?html,css,output
         var progress_id;
         var frame_delay;
 
-        function set_time(value) {
+        function set_time(value)
+        {
             document.getElementById("time_slider").value = value;
             var player = document.getElementById("player");
             player.currentTime = player.duration * value / 1000;
         }
 
-        function move_slider() {
+        function move_slider()
+        {
             document.getElementById("time_slider").value++;
         }
 
-        function update_duration(duration) {
+        function update_duration(duration)
+        {
             // Set duration label
             document.getElementById('label_duration').innerText = secondsToMinutes(duration);
             document.getElementById("time_slider").value = 0;
@@ -372,13 +390,15 @@ https://jsbin.com/moyiro/4/edit?html,css,output
         }
 
         // https://www.html5rocks.com/en/tutorials/file/dndfiles/
-        function handle_drag_over(evt) {
+        function handle_drag_over(evt)
+        {
             document.getElementById('file_div').style.display = "initial";
             var files = evt.dataTransfer.files;
-            alert(files.length);
+            console.log('ADD ' + files.length + ' files');
         }
 
-        function handle_file_select() {
+        function handle_file_select()
+        {
             document.getElementById('file_div').style.display = "none";
         }
 
@@ -395,7 +415,8 @@ https://jsbin.com/moyiro/4/edit?html,css,output
         <video id="player"
                ondurationchange="update_duration(this.duration)"
                onended="play_next_track()"
-               ontimeupdate="document.getElementById('label_time').innerText = secondsToMinutes(this.currentTime);">No support for html5.
+               ontimeupdate="document.getElementById('label_time').innerText = secondsToMinutes(this.currentTime);">No
+            support for html5.
         </video>
         <div class="controls">
             <label id="label_time" for="time_slider"> </label>
@@ -432,11 +453,9 @@ https://jsbin.com/moyiro/4/edit?html,css,output
     </div>
 
 </div>
-<div id="song_list">
 
-    <div id="fileList"></div>
+<div id="fileList"></div>
 
-</div>
 </body>
 
 </html>
