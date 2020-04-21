@@ -351,12 +351,6 @@ https://jsbin.com/moyiro/4/edit?html,css,output
         var progress_id;
         var frame_delay;
 
-        function update_time(time) {
-            var duration = document.getElementById("player").duration;
-            // document.getElementById("player_slider").value = PLAYER_SLIDER_MAX * time / duration;
-            document.getElementById('label_time').innerText = secondsToMinutes(time);
-        }
-
         function set_time(value) {
             document.getElementById("time_slider").value = value;
             var player = document.getElementById("player");
@@ -364,8 +358,7 @@ https://jsbin.com/moyiro/4/edit?html,css,output
         }
 
         function move_slider() {
-            var time_slider = document.getElementById("time_slider");
-            time_slider.value++;
+            document.getElementById("time_slider").value++;
         }
 
         function update_duration(duration) {
@@ -375,7 +368,7 @@ https://jsbin.com/moyiro/4/edit?html,css,output
             // ANIMATION
             frame_delay = duration; //* 1000 / 1000 50 fps
             clearInterval(progress_id);
-            progress_id = setInterval(move_slider, frame_delay); // in milliseconds
+            progress_id = setInterval(move_slider, frame_delay); // Call periodically (milliseconds)
         }
 
         // https://www.html5rocks.com/en/tutorials/file/dndfiles/
@@ -385,7 +378,7 @@ https://jsbin.com/moyiro/4/edit?html,css,output
             alert(files.length);
         }
 
-        function handle_file_select(evt) {
+        function handle_file_select() {
             document.getElementById('file_div').style.display = "none";
         }
 
@@ -394,15 +387,15 @@ https://jsbin.com/moyiro/4/edit?html,css,output
 <body ondragenter="handle_drag_over(this);">
 <span id="file_div">
     Drop files here
-        <input id="filesToUpload" type="file" multiple onchange="get_files();" ondragleave="handle_file_select(this)"
-               ondragexit="handle_file_select(this)" ondrop="handle_file_select(this)">
+        <input id="filesToUpload" type="file" multiple onchange="get_files();" ondragleave="handle_file_select()"
+               ondragexit="handle_file_select()" ondrop="handle_file_select()">
 </span>
 <div id="header">
     <div>
         <video id="player"
                ondurationchange="update_duration(this.duration)"
                onended="play_next_track()"
-               ontimeupdate="update_time(this.currentTime)">No support for html5.
+               ontimeupdate="document.getElementById('label_time').innerText = secondsToMinutes(this.currentTime);">No support for html5.
         </video>
         <div class="controls">
             <label id="label_time" for="time_slider"> </label>
